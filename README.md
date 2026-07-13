@@ -114,7 +114,7 @@ A arquitetura e os serviços escolhidos serão documentados durante o desenvolvi
 
 ## Requisitos do ambiente Python
 
-As dependências utilizadas pelo notebook estão listadas no arquivo [`requirements.txt`](requirements.txt):
+As dependências utilizadas pelo notebook estão listadas no arquivo [`equipe-dados/requirements.txt`](equipe-dados/requirements.txt):
 
 - `pandas`: manipulação e transformação dos dados;
 - `numpy`: operações numéricas;
@@ -144,7 +144,7 @@ No Windows PowerShell:
 Instale as dependências:
 
 ```bash
-python -m pip install -r requirements.txt
+python -m pip install -r equipe-dados/requirements.txt
 ```
 
 Depois, abra e execute o notebook na ordem das células. O arquivo de dados esperado deve estar no caminho indicado no próprio notebook.
