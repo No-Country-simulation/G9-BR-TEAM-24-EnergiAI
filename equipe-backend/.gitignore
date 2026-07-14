@@ -1,0 +1,16 @@
+# Compilação e Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*mvnw*
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+
+# Ambiente
+.env
+*.log
