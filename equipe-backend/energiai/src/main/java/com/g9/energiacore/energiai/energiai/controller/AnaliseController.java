@@ -1,8 +1,8 @@
-package com.g9.energiacore.energiai.controller;
+package com.g9.energiacore.energiai.energiai.controller;
 
-import com.g9.energiacore.energiai.dto.AnaliseRequest;
-import com.g9.energiacore.energiai.dto.AnaliseResponse;
-import com.g9.energiacore.energiai.service.AnaliseService;
+import com.g9.energiacore.energiai.energiai.dto.AnaliseRequest;
+import com.g9.energiacore.energiai.energiai.dto.AnaliseResponse;
+import com.g9.energiacore.energiai.energiai.service.AnaliseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
