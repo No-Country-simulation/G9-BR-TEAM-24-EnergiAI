@@ -37,7 +37,7 @@ class AnaliseControllerTest {
     mockMvc.perform(post("/analise-energetica")
         .contentType(MediaType.APPLICATION_JSON)
         .content(jsonRequest))
-        .andExpect(status().isCreated())
+        .andExpect(status().isOk())
         // Valida se as chaves de saída estão no formato snake_case exigido
         .andExpect(jsonPath("$.categoria").exists())
         .andExpect(jsonPath("$.probabilidade").exists())
