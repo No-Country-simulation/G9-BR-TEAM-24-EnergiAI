@@ -44,4 +44,44 @@ class AnaliseControllerTest {
         .andExpect(jsonPath("$.recomendacoes").isArray())
         .andExpect(jsonPath("$.custo_estimado_mensal").exists());
   }
+
+  @Test
+  @DisplayName("Deve retornar 400 Bad Request quando tipo_imovel for em branco ou vazio")
+  void deveRetornar400QuandoTipoImovelForEmBranco() throws Exception {
+    String jsonRequest = """
+        {
+            "consumo_kwh": 350.0,
+            "uso_horario_pico": true,
+            "quantidade_equipamentos": 5,
+            "tipo_imovel": "   ",
+            "horas_alto_consumo": 6
+        }
+        """;
+
+    mockMvc.perform(post("/analise-energetica")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(jsonRequest))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value("Erro de validação"));
+  }
+
+  @Test
+  @DisplayName("Deve retornar 400 Bad Request quando horas_alto_consumo for maior que 24")
+  void deveRetornar400QuandoHorasAltoConsumoExceder24() throws Exception {
+    String jsonRequest = """
+        {
+            "consumo_kwh": 350.0,
+            "uso_horario_pico": true,
+            "quantidade_equipamentos": 5,
+            "tipo_imovel": "Residencial",
+            "horas_alto_consumo": 25
+        }
+        """;
+
+    mockMvc.perform(post("/analise-energetica")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(jsonRequest))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value("Erro de validação"));
+  }
 }

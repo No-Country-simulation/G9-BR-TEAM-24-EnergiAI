@@ -1,7 +1,9 @@
 package com.g9.energiacore.energiai.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record AnaliseRequest(
@@ -20,12 +22,13 @@ public record AnaliseRequest(
         Integer quantidadeEquipamentos,
 
         @JsonProperty("tipo_imovel")
-        @NotNull
+        @NotBlank
         String tipoImovel,
 
         @JsonProperty("horas_alto_consumo")
         @NotNull
         @Min(0)
+        @Max(24)
         Integer horasAltoConsumo
 ) {}
 
