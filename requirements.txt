@@ -1,4 +1,12 @@
 pandas
 numpy
 openpyxl
-lxml
+matplotlib
+seaborn
+scikit-learn
+xgboost
+shap
+jupyterlab
+onnx
+onnxruntime
+skl2onnx

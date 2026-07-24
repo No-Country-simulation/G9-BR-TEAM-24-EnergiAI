@@ -1,0 +1,35 @@
+{
+  "formato": "ONNX",
+  "arquivo": "modelo_features_uso.onnx",
+  "features_na_ordem": [
+    "numero_moradores",
+    "temperatura_media_2019_uf_c",
+    "temperatura_configurada_ar_c",
+    "intensidade_microondas",
+    "intensidade_maquina_lavar",
+    "intensidade_chuveiros",
+    "frequencia_ar_semana",
+    "uf"
+  ],
+  "features_numericas": [
+    "numero_moradores",
+    "temperatura_media_2019_uf_c",
+    "temperatura_configurada_ar_c",
+    "intensidade_microondas",
+    "intensidade_maquina_lavar",
+    "intensidade_chuveiros",
+    "frequencia_ar_semana"
+  ],
+  "features_categoricas": [
+    "uf"
+  ],
+  "output": "consumo_estimado_kwh",
+  "limite_operacional_kwh": 400.0,
+  "diferenca_maxima_sklearn_onnx_kwh": 0.00017645624586748454,
+  "regra_eficiencia": {
+    "eficiente": "razao <= 0.80",
+    "normal": "0.80 < razao <= 1.20",
+    "ineficiente": "razao > 1.20",
+    "nota": "clip(140 - 70 * razao, 0, 100)"
+  }
+}

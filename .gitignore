@@ -1,3 +1,7 @@
 *.xlsx
 .venv
 *.csv
+*.zip
+*.joblib
+__pycache__/
+.ipynb_checkpoints/

@@ -1,0 +1,42 @@
+{
+  "previsao_kwh": 254.72,
+  "consumo_usado_na_eficiencia_kwh": 310.0,
+  "origem_consumo_eficiencia": "informado_pelo_usuario",
+  "mediana_vizinhos_kwh": 243.0,
+  "razao_consumo_vizinhos": 1.276,
+  "classificacao_eficiencia": "ineficiente",
+  "nota_eficiencia_0_100": 50.7,
+  "regra_nota": "nota = limitar(140 - 70 × razão, entre 0 e 100); razão 1 equivale a 70",
+  "features_modelo": [
+    "numero_moradores",
+    "temperatura_media_2019_uf_c",
+    "temperatura_configurada_ar_c",
+    "intensidade_maquina_lavar",
+    "intensidade_chuveiros",
+    "frequencia_ar_semana",
+    "minutos_microondas_semana",
+    "uf"
+  ],
+  "recomendacoes": [
+    {
+      "feature": "temperatura_configurada_ar_c",
+      "acao": "elevar moderadamente a temperatura configurada do ar-condicionado",
+      "valor_atual": 19.0,
+      "referencia_vizinhos": 22.0
+    },
+    {
+      "feature": "intensidade_maquina_lavar",
+      "acao": "agrupar roupas e reduzir ciclos semanais",
+      "valor_atual": 8.0,
+      "referencia_vizinhos": 4.0
+    },
+    {
+      "feature": "frequencia_ar_semana",
+      "acao": "reduzir dias de uso do ar-condicionado",
+      "valor_atual": 6.0,
+      "referencia_vizinhos": 4.11
+    }
+  ],
+  "metodo_explicacao": "comparação KNN com residências semelhantes e SHAP global no notebook",
+  "disclaimer": "Modelo válido prioritariamente até 400 kWh; recomendações são associações com vizinhos, não efeitos causais garantidos."
+}

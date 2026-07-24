@@ -52,14 +52,51 @@ A etapa de dados contempla:
 - geração de recomendações por regras ou modelos;
 - serialização do modelo treinado.
 
-O notebook atual trata os dados de consumo e gera dois conjuntos para comparação entre períodos:
+## Pipeline de dados e treinamento
 
-- `df_jan_jun`: consumo de janeiro a junho;
-- `df_jun_dez`: consumo de junho a dezembro.
+O pipeline reproduzível foi reduzido a dois notebooks:
 
-Junho está presente nos dois períodos. Cada conjunto considera apenas registros com pelo menos três meses de consumo positivo no intervalo correspondente.
+1. [`equipe-dados/tratamento_dados_energia_regressao.ipynb`](equipe-dados/tratamento_dados_energia_regressao.ipynb)
+   transforma a planilha PPH 2019 e os dados climáticos em uma tabela analítica
+   com uma residência por linha.
+2. [`equipe-dados/treinamento_exportacao_modelo_energia.ipynb`](equipe-dados/treinamento_exportacao_modelo_energia.ipynb)
+   faz a análise exploratória, seleção de features, treinamento, avaliação,
+   explicabilidade, exemplo JSON e exportação do modelo ONNX.
 
-Notebook: [`equipe-dados/tratamento_dados_energia_regressao.ipynb`](equipe-dados/tratamento_dados_energia_regressao.ipynb)
+As fontes brutas não fazem parte do repositório. Antes de executar o tratamento,
+coloque na raiz do projeto os arquivos `PPH 2019 - Banco de Dados V2.xlsx` e
+`2019.csv`. Em seguida, execute os dois notebooks na ordem acima. A tabela
+intermediária `equipe-dados/dados_pph2019_tratados_regressao.csv` é gerada pelo
+primeiro notebook e não deve ser versionada.
+
+O notebook de treinamento usa uma formulação sem quantidades isoladas de
+equipamentos ou lâmpadas.
+Posse aparece somente combinada com frequência, duração ou intensidade de uso.
+O experimento compara quatro regressors e aplica RFE sobre 30 candidatas. A
+escolha global usa parcimônia: entre modelos com RMSE até 0,5% do melhor,
+seleciona aquele com menos campos. O resultado atual usa 8 features, das quais
+5 são acionáveis. O notebook também exibe uma matriz diagnóstica por faixas de
+consumo e produz recomendações KNN/SHAP limitadas a mudanças comportamentais,
+sem sugerir o descarte de bens.
+
+Ao final, o notebook também calcula a eficiência relativa aos vizinhos KNN:
+até 0,8 vez a mediana é **eficiente**, acima de 1,2 vez é **ineficiente** e os
+demais casos são **normais**. A nota de 0 a 100 usa 70 pontos como equivalência
+aos vizinhos. O modelo de implantação é exportado em ONNX e seu contrato de
+integração está documentado em
+[`equipe-dados/resultados_modelagem_uso/INTEGRACAO_BACKEND_ONNX.md`](equipe-dados/resultados_modelagem_uso/INTEGRACAO_BACKEND_ONNX.md).
+
+O domínio operacional é limitado a contas de até 400 kWh. Casos acima desse
+valor não participam do ajuste nem das métricas principais e recebem um
+disclaimer explícito. A explicabilidade combina SHAP global e comparação KNN
+com residências semelhantes.
+
+O tratamento de outliers utiliza limites de 1% e 99% aprendidos exclusivamente
+no conjunto de treino. O conjunto de teste não tem observações removidas. Mesmo
+com as melhorias, o R² permaneceu abaixo de 0,50 na validação e no teste. Isso
+indica limitação preditiva das variáveis disponíveis; o projeto não apresenta
+um R² artificialmente superior por meio de divisão aleatória, vazamento do alvo
+ou exclusão de casos difíceis do teste.
 
 ## API REST
 
@@ -119,7 +156,10 @@ As dependências utilizadas pelo notebook estão listadas no arquivo [`requireme
 - `pandas`: manipulação e transformação dos dados;
 - `numpy`: operações numéricas;
 - `openpyxl`: leitura de arquivos Excel;
-- `lxml`: processamento eficiente do XML interno de arquivos XLSX.
+- `scikit-learn`: pipelines, pré-processamento, validação e modelos de referência;
+- `xgboost`: modelos de gradient boosting regularizados;
+- `jupyterlab`: execução interativa dos notebooks.
+- `onnx`, `skl2onnx` e `onnxruntime`: exportação e inferência portátil do modelo.
 
 ### Instalação
 
