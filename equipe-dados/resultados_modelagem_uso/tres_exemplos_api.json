@@ -1,0 +1,94 @@
+[
+  {
+    "entrada": {
+      "consumo_kwh": 90.0,
+      "uso_horario_pico": false,
+      "quantidade_equipamentos": 7.0,
+      "tipo_imovel": "Casa",
+      "horas_alto_consumo": 0.0,
+      "moradores": 3.0,
+      "regiao": "Sudeste",
+      "quantidade_ar_condicionado": 0.0
+    },
+    "saida": {
+      "categoria": "Eficiente",
+      "probabilidade": 0.5443,
+      "probabilidades": {
+        "Eficiente": 0.5443,
+        "Moderado": 0.1622,
+        "Ineficiente": 0.2935
+      },
+      "consumo_informado_kwh": 90.0,
+      "consumo_referencia_kwh": 116.48,
+      "indice_consumo_relativo": 0.773,
+      "custo_estimado_mensal": 67.5,
+      "recomendacoes": [
+        "Manter os hábitos atuais e acompanhar a evolução mensal do consumo."
+      ],
+      "aviso": "Perfil relativo a residências semelhantes; recomendações não garantem efeito causal."
+    }
+  },
+  {
+    "entrada": {
+      "consumo_kwh": 190.0,
+      "uso_horario_pico": true,
+      "quantidade_equipamentos": 10.0,
+      "tipo_imovel": "Casa",
+      "horas_alto_consumo": 2.0,
+      "moradores": 3.0,
+      "regiao": "Sudeste",
+      "quantidade_ar_condicionado": 1.0
+    },
+    "saida": {
+      "categoria": "Ineficiente",
+      "probabilidade": 0.5104,
+      "probabilidades": {
+        "Eficiente": 0.2637,
+        "Moderado": 0.2259,
+        "Ineficiente": 0.5104
+      },
+      "consumo_informado_kwh": 190.0,
+      "consumo_referencia_kwh": 163.38,
+      "indice_consumo_relativo": 1.163,
+      "custo_estimado_mensal": 142.5,
+      "recomendacoes": [
+        "Distribuir equipamentos de maior potência fora do período de 18h às 21h.",
+        "Usar o ar-condicionado com portas fechadas e temperatura próxima de 23 °C.",
+        "Revisar banho elétrico, refrigeração e equipamentos resistivos, principais cargas residenciais."
+      ],
+      "aviso": "Perfil relativo a residências semelhantes; recomendações não garantem efeito causal."
+    }
+  },
+  {
+    "entrada": {
+      "consumo_kwh": 420.0,
+      "uso_horario_pico": true,
+      "quantidade_equipamentos": 10.0,
+      "tipo_imovel": "Casa",
+      "horas_alto_consumo": 4.0,
+      "moradores": 3.0,
+      "regiao": "Sudeste",
+      "quantidade_ar_condicionado": 1.0
+    },
+    "saida": {
+      "categoria": "Ineficiente",
+      "probabilidade": 0.9979,
+      "probabilidades": {
+        "Eficiente": 0.0003,
+        "Moderado": 0.0018,
+        "Ineficiente": 0.9979
+      },
+      "consumo_informado_kwh": 420.0,
+      "consumo_referencia_kwh": 163.38,
+      "indice_consumo_relativo": 2.571,
+      "custo_estimado_mensal": 315.0,
+      "recomendacoes": [
+        "Distribuir equipamentos de maior potência fora do período de 18h às 21h.",
+        "Reduzir ou alternar atividades de alto consumo no mesmo período.",
+        "Usar o ar-condicionado com portas fechadas e temperatura próxima de 23 °C.",
+        "Revisar banho elétrico, refrigeração e equipamentos resistivos, principais cargas residenciais."
+      ],
+      "aviso": "Perfil relativo a residências semelhantes; recomendações não garantem efeito causal."
+    }
+  }
+]

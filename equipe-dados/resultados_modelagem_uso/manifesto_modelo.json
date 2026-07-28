@@ -1,0 +1,27 @@
+{
+  "features_modelo": [
+    "quantidade_equipamentos",
+    "tipo_imovel",
+    "moradores",
+    "regiao",
+    "quantidade_ar_condicionado"
+  ],
+  "features_api": [
+    "consumo_kwh",
+    "uso_horario_pico",
+    "quantidade_equipamentos",
+    "tipo_imovel",
+    "horas_alto_consumo",
+    "moradores",
+    "regiao",
+    "quantidade_ar_condicionado"
+  ],
+  "modelo_nome": "GradientBoosting",
+  "calibracao": {
+    "desvio_residual_kwh": 80.91071197457576,
+    "limite_eficiente": 0.85,
+    "limite_ineficiente": 1.15
+  },
+  "tarifa_reais_kwh": 0.75,
+  "versao_contrato": "2.0"
+}

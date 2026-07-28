@@ -63,40 +63,51 @@ O pipeline reproduzível foi reduzido a dois notebooks:
    faz a análise exploratória, seleção de features, treinamento, avaliação,
    explicabilidade, exemplo JSON e exportação do modelo ONNX.
 
+Os notebooks são autocontidos: toda a lógica de tratamento, modelagem,
+classificação e exportação está em células executáveis, sem módulos Python
+locais. O dicionário completo das 69 colunas, incluindo perguntas de origem e
+regras de agregação, está em
+[`equipe-dados/DICIONARIO_DADOS.md`](equipe-dados/DICIONARIO_DADOS.md).
+
 As fontes brutas não fazem parte do repositório. Antes de executar o tratamento,
 coloque na raiz do projeto os arquivos `PPH 2019 - Banco de Dados V2.xlsx` e
 `2019.csv`. Em seguida, execute os dois notebooks na ordem acima. A tabela
 intermediária `equipe-dados/dados_pph2019_tratados_regressao.csv` é gerada pelo
 primeiro notebook e não deve ser versionada.
 
-O notebook de treinamento usa uma formulação sem quantidades isoladas de
-equipamentos ou lâmpadas.
-Posse aparece somente combinada com frequência, duração ou intensidade de uso.
-O experimento compara quatro regressors e aplica RFE sobre 30 candidatas. A
-escolha global usa parcimônia: entre modelos com RMSE até 0,5% do melhor,
-seleciona aquele com menos campos. O resultado atual usa 8 features, das quais
-5 são acionáveis. O notebook também exibe uma matriz diagnóstica por faixas de
-consumo e produz recomendações KNN/SHAP limitadas a mudanças comportamentais,
-sem sugerir o descarte de bens.
+O tratamento foi reconstruído respeitando o grão da PPH. Atributos domiciliares
+são consolidados uma vez por `ENTREVISTA`; cada `LOOP` adicional representa um
+aparelho e suas medidas são somadas exatamente uma vez. Isso elimina a antiga
+duplicação em que uma intensidade já agregada era novamente multiplicada pela
+quantidade total. Ausência de resposta permanece ausente e não é confundida com
+zero.
 
-Ao final, o notebook também calcula a eficiência relativa aos vizinhos KNN:
-até 0,8 vez a mediana é **eficiente**, acima de 1,2 vez é **ineficiente** e os
-demais casos são **normais**. A nota de 0 a 100 usa 70 pontos como equivalência
-aos vizinhos. O modelo de implantação é exportado em ONNX e seu contrato de
-integração está documentado em
-[`equipe-dados/resultados_modelagem_uso/INTEGRACAO_BACKEND_ONNX.md`](equipe-dados/resultados_modelagem_uso/INTEGRACAO_BACKEND_ONNX.md).
+A base inclui características construtivas, ocupação, aparelhos principais,
+56 grupos de equipamentos de uso geral (`P9`), horários, clima e 20 hábitos de
+eficiência (`P11`). O alvo é a média de pelo menos seis meses válidos; a mediana
+e a dispersão mensal permanecem disponíveis para auditoria. Não há exclusão de
+residências acima de 400 kWh nem remoção de casos difíceis.
 
-O domínio operacional é limitado a contas de até 400 kWh. Casos acima desse
-valor não participam do ajuste nem das métricas principais e recebem um
-disclaimer explícito. A explicabilidade combina SHAP global e comparação KNN
-com residências semelhantes.
+O experimento compara Dummy, Ridge, Random Forest e Gradient Boosting em
+formulários de 3 a 7 variáveis. A seleção usa validação repetida 5 × 3 e escolhe
+o menor conjunto cujo MAE fica até 2% do melhor. O resultado reproduzido em julho
+de 2026 selecionou Gradient Boosting com apenas 5 variáveis, alcançando R² médio
+de 0,423 na validação e 0,493 no holdout, com MAE de 49,59 kWh no holdout.
+Adicionar os campos de horário já coletados não melhorou materialmente a métrica.
+As métricas completas ficam em
+[`metricas_validacao.csv`](equipe-dados/resultados_modelagem_uso/metricas_validacao.csv).
 
-O tratamento de outliers utiliza limites de 1% e 99% aprendidos exclusivamente
-no conjunto de treino. O conjunto de teste não tem observações removidas. Mesmo
-com as melhorias, o R² permaneceu abaixo de 0,50 na validação e no teste. Isso
-indica limitação preditiva das variáveis disponíveis; o projeto não apresenta
-um R² artificialmente superior por meio de divisão aleatória, vazamento do alvo
-ou exclusão de casos difíceis do teste.
+O perfil compara o consumo informado à referência prevista para residências
+semelhantes: até 85% é Eficiente, entre 85% e 115% é Moderado e a partir de 115%
+é Ineficiente. Recomendações usam regras transparentes sobre horário de ponta,
+climatização e quantidade de equipamentos. O artefato canônico para o back-end
+Java é `modelo_consumo_referencia.onnx`; o contrato está em
+[`INTEGRACAO_BACKEND.md`](equipe-dados/resultados_modelagem_uso/INTEGRACAO_BACKEND.md).
+
+SHAP é utilizado para explicar localmente quais variáveis elevaram ou reduziram
+a referência prevista. Ele não é tratado como evidência causal: ações
+comportamentais continuam baseadas em regras auditáveis, enquanto o XAI ajuda a
+contextualizar e priorizar os fatores apresentados ao usuário.
 
 ## API REST
 
@@ -159,7 +170,8 @@ As dependências utilizadas pelo notebook estão listadas no arquivo [`requireme
 - `scikit-learn`: pipelines, pré-processamento, validação e modelos de referência;
 - `xgboost`: modelos de gradient boosting regularizados;
 - `jupyterlab`: execução interativa dos notebooks.
-- `onnx`, `skl2onnx` e `onnxruntime`: exportação e inferência portátil do modelo.
+- `joblib`: serialização do pipeline completo;
+- `lxml`: leitura seletiva e eficiente da planilha PPH.
 
 ### Instalação
 
