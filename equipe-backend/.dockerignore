@@ -1,0 +1,53 @@
+# ==============================================================================
+# .dockerignore - equipe-backend (energiai-api)
+# Melhores práticas para contexto de build e segurança da imagem Docker
+# ==============================================================================
+
+# Versioneamento
+.git
+.gitignore
+.gitattributes
+.gitkeep
+.svn
+.hg
+
+# Arquivos e diretórios de build local (Maven / Java)
+**/target/
+target/
+*.jar
+*.war
+*.ear
+*.class
+
+# Ambientes e arquivos de IDE / Editor
+.idea/
+*.iml
+.project
+.classpath
+.factorypath
+.settings/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs e arquivos temporários
+*.log
+logs/
+tmp/
+temp/
+.env
+.env.*
+
+# Documentação e arquivos informativos (não necessários na compilação)
+*.md
+HELP.md
+API_CONTRACT.md
+LICENSE
+
+# Arquivos do próprio Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
