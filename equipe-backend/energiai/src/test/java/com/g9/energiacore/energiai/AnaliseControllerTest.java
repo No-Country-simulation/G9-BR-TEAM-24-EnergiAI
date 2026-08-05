@@ -21,16 +21,18 @@ class AnaliseControllerTest {
   private MockMvc mockMvc;
 
   @Test
-  @DisplayName("Deve retornar 200 OK e o JSON de Mock correto ao enviar dados validos")
+  @DisplayName("Deve retornar 201 Created e JSON valido ao enviar o DTO completo do modelo ONNX")
   void deveRetornarMockComSucesso() throws Exception {
-    // O JSON exato que o edital exige como entrada
     String jsonRequest = """
         {
-            "consumo_kwh": 420,
+            "consumo_kwh": 420.5,
             "uso_horario_pico": true,
             "quantidade_equipamentos": 10,
-            "tipo_imovel": "Casa",
-            "horas_alto_consumo": 8
+            "tipo_imovel": "Residencial",
+            "horas_alto_consumo": 8,
+            "quantidade_ar_condicionado": 2,
+            "moradores": 4,
+            "regiao": "Sudeste"
         }
         """;
 
@@ -38,7 +40,6 @@ class AnaliseControllerTest {
         .contentType(MediaType.APPLICATION_JSON)
         .content(jsonRequest))
         .andExpect(status().isCreated())
-        // Valida se as chaves de saída estão no formato snake_case exigido
         .andExpect(jsonPath("$.categoria").exists())
         .andExpect(jsonPath("$.probabilidade").exists())
         .andExpect(jsonPath("$.recomendacoes").isArray())
@@ -46,15 +47,18 @@ class AnaliseControllerTest {
   }
 
   @Test
-  @DisplayName("Deve retornar 400 Bad Request quando tipo_imovel for em branco ou vazio")
-  void deveRetornar400QuandoTipoImovelForEmBranco() throws Exception {
+  @DisplayName("Deve retornar 400 Bad Request quando quantidade_ar_condicionado for nulo ou menor que 0")
+  void deveRetornar400QuandoQuantidadeArCondicionadoForInvalida() throws Exception {
     String jsonRequest = """
         {
             "consumo_kwh": 350.0,
             "uso_horario_pico": true,
             "quantidade_equipamentos": 5,
-            "tipo_imovel": "   ",
-            "horas_alto_consumo": 6
+            "tipo_imovel": "Residencial",
+            "horas_alto_consumo": 6,
+            "quantidade_ar_condicionado": -1,
+            "moradores": 3,
+            "regiao": "Sul"
         }
         """;
 
@@ -66,15 +70,18 @@ class AnaliseControllerTest {
   }
 
   @Test
-  @DisplayName("Deve retornar 400 Bad Request quando horas_alto_consumo for maior que 24")
-  void deveRetornar400QuandoHorasAltoConsumoExceder24() throws Exception {
+  @DisplayName("Deve retornar 400 Bad Request quando moradores for menor que 1")
+  void deveRetornar400QuandoMoradoresForMenorQueUm() throws Exception {
     String jsonRequest = """
         {
             "consumo_kwh": 350.0,
             "uso_horario_pico": true,
             "quantidade_equipamentos": 5,
             "tipo_imovel": "Residencial",
-            "horas_alto_consumo": 25
+            "horas_alto_consumo": 6,
+            "quantidade_ar_condicionado": 1,
+            "moradores": 0,
+            "regiao": "Nordeste"
         }
         """;
 
@@ -83,5 +90,53 @@ class AnaliseControllerTest {
         .content(jsonRequest))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error").value("Erro de validação"));
+  }
+
+  @Test
+  @DisplayName("Deve retornar 400 Bad Request quando regiao for nula ou invalida")
+  void deveRetornar400QuandoRegiaoForInvalida() throws Exception {
+    String jsonRequest = """
+        {
+            "consumo_kwh": 350.0,
+            "uso_horario_pico": true,
+            "quantidade_equipamentos": 5,
+            "tipo_imovel": "Residencial",
+            "horas_alto_consumo": 6,
+            "quantidade_ar_condicionado": 1,
+            "moradores": 2,
+            "regiao": "RegiaoInvalida"
+        }
+        """;
+
+    mockMvc.perform(post("/analise-energetica")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(jsonRequest))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @DisplayName("Deve retornar 201 Created para todas as regioes brasileiras permitidas")
+  void deveAceitarTodasAsRegioesPermitidas() throws Exception {
+    String[] regioes = {"Norte", "Nordeste", "Centro-Oeste", "Sudeste", "Sul"};
+
+    for (String regiao : regioes) {
+      String jsonRequest = String.format("""
+          {
+              "consumo_kwh": 250.0,
+              "uso_horario_pico": false,
+              "quantidade_equipamentos": 4,
+              "tipo_imovel": "Residencial",
+              "horas_alto_consumo": 3,
+              "quantidade_ar_condicionado": 1,
+              "moradores": 2,
+              "regiao": "%s"
+          }
+          """, regiao);
+
+      mockMvc.perform(post("/analise-energetica")
+          .contentType(MediaType.APPLICATION_JSON)
+          .content(jsonRequest))
+          .andExpect(status().isCreated());
+    }
   }
 }

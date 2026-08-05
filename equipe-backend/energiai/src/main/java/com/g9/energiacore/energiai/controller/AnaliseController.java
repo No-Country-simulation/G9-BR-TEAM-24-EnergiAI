@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/analise-energetica")
-@Tag(name = "Análise Energética", description = "Endpoints para análise de consumo energético")
+@Tag(name = "Análise Energética", description = "Endpoints para análise de consumo energético via IA")
 public class AnaliseController {
 
     private static final Logger log = LoggerFactory.getLogger(AnaliseController.class);
@@ -32,7 +32,7 @@ public class AnaliseController {
 
     @Operation(
             summary = "Realizar análise energética",
-            description = "Recebe os dados de consumo energético e retorna uma análise com categoria, probabilidade, recomendações e custo estimado."
+            description = "Recebe os dados de consumo energético e características residenciais/regionais e retorna o diagnóstico do modelo de IA com categoria de eficiência, probabilidade, recomendações e custo estimado."
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -41,34 +41,37 @@ public class AnaliseController {
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Dados de entrada inválidos (campos nulos ou fora dos limites permitidos)",
+                    description = "Dados de entrada inválidos (campos nulos, fora dos limites permitidos ou região não reconhecida)",
                     content = @Content
             )
     })
     @PostMapping
     public ResponseEntity<AnaliseResponse> analisar(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Dados de consumo energético para análise",
+                    description = "Dados de consumo e perfil do imóvel para a inferência do modelo de IA",
                     required = true,
                     content = @Content(
                             schema = @Schema(implementation = AnaliseRequest.class),
                             examples = @ExampleObject(
-                                    name = "Exemplo de requisição",
-                                    summary = "Exemplo típico de análise energética",
+                                    name = "Exemplo de requisição completa",
+                                    summary = "Exemplo típico de análise energética com dados residenciais e regionais",
                                     value = """
                                             {
                                                 "consumo_kwh": 350.5,
                                                 "uso_horario_pico": true,
                                                 "quantidade_equipamentos": 8,
-                                                "tipo_imovel": "residencial",
-                                                "horas_alto_consumo": 6
+                                                "tipo_imovel": "Residencial",
+                                                "horas_alto_consumo": 6,
+                                                "quantidade_ar_condicionado": 2,
+                                                "moradores": 4,
+                                                "regiao": "Sudeste"
                                             }
                                             """
                             )
                     )
             )
             @Valid @RequestBody AnaliseRequest req) {
-        log.info("Análise energética solicitada: {}", req);
+        log.info("Análise energética solicitada com novos atributos ONNX: {}", req);
         AnaliseResponse resp = analiseService.analisar(req);
         return ResponseEntity.status(201).body(resp);
     }

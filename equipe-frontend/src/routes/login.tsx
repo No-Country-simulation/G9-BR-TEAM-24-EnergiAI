@@ -119,7 +119,7 @@ function LoginPage() {
                   <button
                     type="button"
                     className="text-xs text-primary hover:underline"
-                    onClick={() => toast.info("Enviamos instruções para o seu e-mail (mock).")}
+                    onClick={() => toast.info("Enviamos instruções para o seu e-mail.")}
                   >
                     Esqueci a senha
                   </button>

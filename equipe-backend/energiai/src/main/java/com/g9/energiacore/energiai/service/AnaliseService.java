@@ -2,7 +2,12 @@ package com.g9.energiacore.energiai.service;
 
 import com.g9.energiacore.energiai.dto.AnaliseRequest;
 import com.g9.energiacore.energiai.dto.AnaliseResponse;
+import com.g9.energiacore.energiai.dto.Regiao;
+import com.g9.energiacore.energiai.infra.ai.InferenceResult;
+import com.g9.energiacore.energiai.infra.ai.OnnxInferenceService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,65 +15,60 @@ import java.util.List;
 public class AnaliseService {
 
     private static final double CUSTO_KWH = 0.75;
+    private final OnnxInferenceService onnxInferenceService;
+
+    @Autowired
+    public AnaliseService(OnnxInferenceService onnxInferenceService) {
+        this.onnxInferenceService = onnxInferenceService;
+    }
 
     public AnaliseResponse analisar(AnaliseRequest request) {
-        // Ajustado para usar os assessores do Record (sem o "get")
-        double consumoKwh = request.consumoKwh() != null ? request.consumoKwh() : 0;
-        boolean usoPico = request.usoHorarioPico() != null && request.usoHorarioPico();
-        int quantidadeEquipamentos = request.quantidadeEquipamentos() != null ? request.quantidadeEquipamentos() : 0;
-        String tipoImovel = request.tipoImovel();
-        int horasAltoConsumo = request.horasAltoConsumo() != null ? request.horasAltoConsumo() : 0;
+        // 1. Executa a inferência preditiva desacoplada através da camada ONNX
+        InferenceResult inferenceResult = onnxInferenceService.executarInferenciador(request);
 
-        String categoria;
-        double probabilidade;
+        String categoria = inferenceResult.categoria();
+        double probabilidade = inferenceResult.probabilidade();
 
-        // Lógica de classificação
-        if (consumoKwh > 400 || (usoPico && horasAltoConsumo > 8)) {
-            categoria = "Ineficiente";
-            probabilidade = 0.81;
-        } else if (consumoKwh > 200 || (horasAltoConsumo > 4 && quantidadeEquipamentos > 5)) {
-            categoria = "Moderado";
-            probabilidade = 0.65;
-        } else {
-            categoria = "Eficiente";
-            probabilidade = 0.45;
-        }
+        // 2. Gera recomendações contextuais detalhadas considerando todos os atributos do imóvel e da região
+        List<String> recomendacoes = gerarRecomendacoes(request);
 
-        List<String> recomendacoes = gerarRecomendacoes(consumoKwh, usoPico, quantidadeEquipamentos, tipoImovel, horasAltoConsumo);
-
+        // 3. Cálculo de estimativa financeira
+        double consumoKwh = request.consumoKwh() != null ? request.consumoKwh() : 0.0;
         double custoEstimado = consumoKwh * CUSTO_KWH;
         double custoEstimadoMensal = Math.round(custoEstimado * 100.0) / 100.0;
 
-        // Retorna instanciando o Record AnaliseResponse
         return new AnaliseResponse(categoria, probabilidade, recomendacoes, custoEstimadoMensal);
     }
 
-    private List<String> gerarRecomendacoes(double consumoKwh, boolean usoPico, int quantidadeEquipamentos, String tipoImovel, int horasAltoConsumo) {
+    private List<String> gerarRecomendacoes(AnaliseRequest request) {
         List<String> recomendacoes = new ArrayList<>();
 
-        if (usoPico) {
-            recomendacoes.add("Reduzir o uso de equipamentos durante horários de pico");
+        if (Boolean.TRUE.equals(request.usoHorarioPico())) {
+            recomendacoes.add("Reduzir o uso de equipamentos de alta potência durante o horário de pico (18h às 21h)");
         }
-        if (consumoKwh > 300) {
-            recomendacoes.add("Avaliar aparelhos com alto consumo energético");
+        if (request.quantidadeArCondicionado() != null && request.quantidadeArCondicionado() > 0) {
+            recomendacoes.add("Manter a temperatura do ar-condicionado em 23°C e realizar limpeza periódica dos filtros");
         }
-        if (horasAltoConsumo > 6) {
-            recomendacoes.add("Distribuir atividades de maior consumo ao longo do dia");
+        if (request.regiao() == Regiao.NORTE || request.regiao() == Regiao.NORDESTE) {
+            recomendacoes.add("Utilizar ventilação natural e cortinas térmicas para amenizar o impacto do calor regional");
         }
-        if (quantidadeEquipamentos > 10) {
-            recomendacoes.add("Considerar desativar equipamentos não essenciais");
+        if (request.consumoKwh() != null && request.moradores() != null && (request.consumoKwh() / request.moradores()) > 100) {
+            recomendacoes.add("Consumo por morador elevado: conscientizar sobre o tempo no banho e uso de eletrodomésticos");
         }
-
-        if (tipoImovel != null) {
-            if ("Comercial".equalsIgnoreCase(tipoImovel)) {
-                recomendacoes.add("Revisar horários de operação e climatização");
-            } else if ("Residencial".equalsIgnoreCase(tipoImovel)) {
-                recomendacoes.add("Instalar iluminação LED em toda a residência");
-            }
+        if (request.horasAltoConsumo() != null && request.horasAltoConsumo() > 6) {
+            recomendacoes.add("Distribuir tarefas de alto consumo energético ao longo do dia");
+        }
+        if (request.quantidadeEquipamentos() != null && request.quantidadeEquipamentos() > 10) {
+            recomendacoes.add("Desligar equipamentos em standby usando filtros de linha com chave liga/desliga");
+        }
+        if ("Comercial".equalsIgnoreCase(request.tipoImovel())) {
+            recomendacoes.add("Otimizar horários de funcionamento do sistema de climatização e iluminação comercial");
+        } else if ("Residencial".equalsIgnoreCase(request.tipoImovel())) {
+            recomendacoes.add("Substituir lâmpadas antigas por tecnologia LED em todos os cômodos");
         }
 
         if (recomendacoes.isEmpty()) {
-            recomendacoes.add("Manter o padrão atual de consumo");
+            recomendacoes.add("Manter o excelente padrão atual de consumo consciente");
         }
 
         return recomendacoes;

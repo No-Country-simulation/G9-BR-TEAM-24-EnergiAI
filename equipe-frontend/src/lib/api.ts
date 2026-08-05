@@ -1,14 +1,26 @@
 import { z } from "zod";
 
+export const REGIOES = ["Norte", "Nordeste", "Centro-Oeste", "Sudeste", "Sul"] as const;
+export type Regiao = (typeof REGIOES)[number];
+
 export const analiseRequestSchema = z.object({
   consumo_kwh: z.number().positive("Consumo (kWh) deve ser maior que zero"),
   uso_horario_pico: z.boolean(),
-  quantidade_equipamentos: z.number().min(0, "Quantidade de equipamentos não pode ser negativa"),
+  quantidade_equipamentos: z
+    .number()
+    .min(1, "Quantidade de equipamentos deve ser no mínimo 1"),
   tipo_imovel: z.string().min(1, "Informe o tipo de imóvel"),
   horas_alto_consumo: z
     .number()
     .min(0, "Horas deve ser no mínimo 0")
     .max(24, "Horas deve ser no máximo 24"),
+  quantidade_ar_condicionado: z
+    .number()
+    .min(0, "Quantidade de ar-condicionado não pode ser negativa"),
+  moradores: z.number().min(1, "Quantidade de moradores deve ser no mínimo 1"),
+  regiao: z.enum(REGIOES, {
+    errorMap: () => ({ message: "Informe uma região válida" }),
+  }),
 });
 
 export type AnaliseRequest = z.infer<typeof analiseRequestSchema>;

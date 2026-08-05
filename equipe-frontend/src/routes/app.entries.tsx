@@ -13,7 +13,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAnaliseEnergetica, analiseRequestSchema, AnaliseRequest } from "@/lib/data";
+import {
+  useAnaliseEnergetica,
+  analiseRequestSchema,
+  AnaliseRequest,
+  REGIOES,
+  Regiao,
+} from "@/lib/data";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/entries")({
@@ -24,11 +30,14 @@ function EntriesPage() {
   const navigate = useNavigate();
   const analiseMutation = useAnaliseEnergetica();
 
-  // Estado do formulário correspondente exatamente ao AnaliseRequest
+  // Estado do formulário correspondente exatamente ao AnaliseRequest (8 campos)
   const [consumoKwh, setConsumoKwh] = useState("");
   const [horasAltoConsumo, setHorasAltoConsumo] = useState("3");
   const [quantidadeEquipamentos, setQuantidadeEquipamentos] = useState("5");
   const [tipoImovel, setTipoImovel] = useState("Residencial");
+  const [quantidadeArCondicionado, setQuantidadeArCondicionado] = useState("1");
+  const [moradores, setMoradores] = useState("2");
+  const [regiao, setRegiao] = useState<string>("Sudeste");
   const [usoHorarioPico, setUsoHorarioPico] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,6 +49,9 @@ function EntriesPage() {
       quantidade_equipamentos: Number(quantidadeEquipamentos),
       tipo_imovel: tipoImovel || "Residencial",
       horas_alto_consumo: Number(horasAltoConsumo),
+      quantidade_ar_condicionado: Number(quantidadeArCondicionado),
+      moradores: Number(moradores),
+      regiao: regiao as Regiao,
     };
 
     const validation = analiseRequestSchema.safeParse(payload);
@@ -120,7 +132,7 @@ function EntriesPage() {
                   value={quantidadeEquipamentos}
                   onChange={(e) => setQuantidadeEquipamentos(e.target.value)}
                   placeholder="Ex: 5"
-                  min={0}
+                  min={1}
                   required
                   disabled={analiseMutation.isPending}
                 />
@@ -144,6 +156,52 @@ function EntriesPage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="quantidade_ar_condicionado">Qtd. Ar-Condicionado</Label>
+                <Input
+                  id="quantidade_ar_condicionado"
+                  type="number"
+                  value={quantidadeArCondicionado}
+                  onChange={(e) => setQuantidadeArCondicionado(e.target.value)}
+                  placeholder="Ex: 1"
+                  min={0}
+                  required
+                  disabled={analiseMutation.isPending}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="moradores">Moradores</Label>
+                <Input
+                  id="moradores"
+                  type="number"
+                  value={moradores}
+                  onChange={(e) => setMoradores(e.target.value)}
+                  placeholder="Ex: 2"
+                  min={1}
+                  required
+                  disabled={analiseMutation.isPending}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="regiao">Região</Label>
+              <Select value={regiao} onValueChange={setRegiao} disabled={analiseMutation.isPending}>
+                <SelectTrigger id="regiao">
+                  <SelectValue placeholder="Selecione a região..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {REGIOES.map((item) => (
+                    <SelectItem key={item} value={item}>
+                      {item}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex items-center justify-between rounded-xl border p-4">
