@@ -32,7 +32,7 @@ export interface AnaliseResponse {
   custo_estimado_mensal: number;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://api-beebuzz.nebula-labs.tech";
 
 export const api = {
   async realizarAnalise(payload: AnaliseRequest): Promise<AnaliseResponse> {

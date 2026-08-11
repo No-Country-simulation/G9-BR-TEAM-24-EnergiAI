@@ -7,14 +7,7 @@ export default defineConfig({
   },
   vite: {
     server: {
-      port: 3000,
-      proxy: {
-        "/analise-energetica": {
-          target: "http://localhost:8080",
-          changeOrigin: true,
-          secure: false,
-        },
-      },
+      port: 5173,
     },
   },
 });
