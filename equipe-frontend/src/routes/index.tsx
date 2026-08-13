@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
-import { Zap, Sparkles, TrendingDown, Award } from "lucide-react";
+import { Zap, Sparkles, TrendingDown, Award, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 
@@ -22,9 +22,10 @@ function Splash() {
   }, [loading, user, navigate]);
 
   return (
-    <div className="relative min-h-dvh hero-bg overflow-hidden">
+    <div className="relative min-h-dvh hero-bg flex flex-col justify-between overflow-hidden">
       <div className="pointer-events-none absolute inset-0 opacity-60 [background:radial-gradient(circle_at_20%_20%,var(--primary)/15%,transparent_40%),radial-gradient(circle_at_80%_60%,var(--accent)/15%,transparent_45%)]" />
-      <main className="relative mx-auto flex min-h-dvh max-w-6xl flex-col items-center justify-center px-6 py-16 text-center">
+
+      <main className="relative mx-auto flex flex-1 w-full max-w-6xl flex-col items-center justify-center px-6 py-16 text-center">
         <motion.div
           initial={{ scale: 0.6, opacity: 0, rotate: -8 }}
           animate={{ scale: 1, opacity: 1, rotate: 0 }}
@@ -48,8 +49,7 @@ function Splash() {
           transition={{ delay: 0.25 }}
           className="mt-4 max-w-xl text-lg text-muted-foreground sm:text-xl"
         >
-          Sua jornada gamificada para dominar o consumo de energia. Analise, classifique e
-          economize.
+          Sua jornada gamificada para dominar o consumo de energia. Analise, classifique e economize.
         </motion.p>
 
         <motion.div
@@ -99,6 +99,18 @@ function Splash() {
 
         {loading && <div className="mt-10 text-sm text-muted-foreground">Carregando…</div>}
       </main>
+
+      {/* Footer com link de Contato */}
+      <footer className="relative border-t bg-background/50 py-4 px-6 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground">
+          <div>© {new Date().getFullYear()} Buzz. Todos os direitos reservados.</div>
+          <div className="flex items-center gap-4">
+            <Link to="/contact" className="flex items-center gap-1 hover:text-foreground transition-colors">
+              <Mail className="size-3.5" /> Fale Conosco / Contato
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

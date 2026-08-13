@@ -52,6 +52,9 @@ function SignupPage() {
       await signup({ name, email, password, level });
       toast.success("Conta criada! Vamos te conhecer melhor.");
       navigate({ to: "/onboarding" });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro ao criar conta. Verifique os dados.";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -101,24 +104,9 @@ function SignupPage() {
         >
           <div className="glass rounded-3xl p-8 shadow-soft">
             <h2 className="font-display text-2xl font-bold">Criar conta</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Leva menos de 30 segundos.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Preencha os campos para começar.</p>
 
-            <Button variant="outline" className="mt-6 w-full" type="button">
-              <svg className="size-4" viewBox="0 0 24 24">
-                <path
-                  fill="#EA4335"
-                  d="M12 10.2v3.7h5.2c-.2 1.3-1.6 3.7-5.2 3.7-3.1 0-5.7-2.6-5.7-5.7s2.6-5.7 5.7-5.7c1.8 0 3 .8 3.7 1.4l2.5-2.4C16.7 3.7 14.6 2.7 12 2.7 6.9 2.7 2.8 6.8 2.8 12s4.1 9.3 9.2 9.3c5.3 0 8.8-3.7 8.8-9 0-.6-.1-1.1-.2-1.6H12z"
-                />
-              </svg>
-              Cadastrar com Google
-            </Button>
-
-            <div className="relative my-6 text-center text-xs text-muted-foreground">
-              <span className="bg-card/70 px-3">ou com e-mail</span>
-              <div className="absolute inset-x-0 top-1/2 -z-10 h-px bg-border" />
-            </div>
-
-            <form onSubmit={submit} className="space-y-4">
+            <form onSubmit={submit} className="mt-6 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Nome completo</Label>
                 <Input
@@ -183,15 +171,7 @@ function SignupPage() {
                   className="mt-0.5"
                 />
                 <span>
-                  Aceito os{" "}
-                  <a className="text-primary hover:underline" href="#">
-                    termos de uso
-                  </a>{" "}
-                  e a{" "}
-                  <a className="text-primary hover:underline" href="#">
-                    política de privacidade
-                  </a>
-                  .
+                  Aceito os termos de uso e política de privacidade.
                 </span>
               </label>
               <Button
@@ -211,7 +191,7 @@ function SignupPage() {
 
             <div className="mt-6 text-center text-sm text-muted-foreground">
               Já tem conta?{" "}
-              <Link to="/signup" className="text-primary hover:underline">
+              <Link to="/login" className="text-primary hover:underline">
                 Entrar
               </Link>
             </div>

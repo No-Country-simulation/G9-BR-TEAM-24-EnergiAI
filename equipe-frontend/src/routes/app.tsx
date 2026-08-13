@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, redirect, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -11,6 +11,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { getStoredToken } from "@/lib/api";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,14 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app")({
+  beforeLoad: () => {
+    const token = getStoredToken();
+    if (!token) {
+      throw redirect({
+        to: "/login",
+      });
+    }
+  },
   component: AppShell,
 });
 
@@ -39,13 +48,15 @@ function AppShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/login" });
+    if (!loading && !user) {
+      navigate({ to: "/login" });
+    }
   }, [loading, user, navigate]);
 
   if (loading || !user) {
     return (
       <div className="grid min-h-dvh place-items-center">
-        <div className="animate-pulse text-muted-foreground">Carregando…</div>
+        <div className="animate-pulse text-muted-foreground">Carregando dados da sessão…</div>
       </div>
     );
   }
