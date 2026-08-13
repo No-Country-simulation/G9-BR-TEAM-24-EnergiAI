@@ -41,7 +41,6 @@ resend:
 
 oci:
   model-url: ${OCI_MODEL_URL:}
-
 management:
   endpoints:
     web:
