@@ -7,6 +7,41 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local} # Define 'local' se nada for informado
 
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME:}
+    password: ${DATABASE_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      pool-name: EnergiAIHikariPool
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+jwt:
+  secret: ${JWT_SECRET:EnergiaiBeeBuzzDefaultJwtSecretKeyForHackathon2026Secure256Bits}
+
+resend:
+  api-key: ${RESEND_API_KEY:}
+  from-email: ${RESEND_FROM_EMAIL:onboarding@resend.dev}
+
+oci:
+  model-url: ${OCI_MODEL_URL:}
+
 management:
   endpoints:
     web:
