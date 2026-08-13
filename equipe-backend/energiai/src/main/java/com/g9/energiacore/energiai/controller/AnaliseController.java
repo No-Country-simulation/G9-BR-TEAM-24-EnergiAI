@@ -1,7 +1,9 @@
 package com.g9.energiacore.energiai.controller;
 
+import com.g9.energiacore.energiai.domain.User;
 import com.g9.energiacore.energiai.dto.AnaliseRequest;
 import com.g9.energiacore.energiai.dto.AnaliseResponse;
+import com.g9.energiacore.energiai.infra.security.SecurityUtils;
 import com.g9.energiacore.energiai.service.AnaliseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -27,21 +29,32 @@ public class AnaliseController {
 
     private static final Logger log = LoggerFactory.getLogger(AnaliseController.class);
 
+    private final AnaliseService analiseService;
+    private final SecurityUtils securityUtils;
+
     @Autowired
-    private AnaliseService analiseService;
+    public AnaliseController(AnaliseService analiseService, SecurityUtils securityUtils) {
+        this.analiseService = analiseService;
+        this.securityUtils = securityUtils;
+    }
 
     @Operation(
             summary = "Realizar análise energética",
-            description = "Recebe os dados de consumo energético e características residenciais/regionais e retorna o diagnóstico do modelo de IA com categoria de eficiência, probabilidade, recomendações e custo estimado."
+            description = "Recebe os dados de consumo energético e características do imóvel, executa a inferência preditiva ONNX e salva o consumo associado ao usuário autenticado."
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
-                    description = "Análise realizada com sucesso"
+                    description = "Análise realizada e salva com sucesso"
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Dados de entrada inválidos (campos nulos, fora dos limites permitidos ou região não reconhecida)",
+                    description = "Dados de entrada inválidos",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Já existe uma análise registrada para o mês de referência informado",
                     content = @Content
             )
     })
@@ -53,26 +66,34 @@ public class AnaliseController {
                     content = @Content(
                             schema = @Schema(implementation = AnaliseRequest.class),
                             examples = @ExampleObject(
-                                    name = "Exemplo de requisição completa",
-                                    summary = "Exemplo típico de análise energética com dados residenciais e regionais",
-                                    value = """
-                                            {
-                                                "consumo_kwh": 350.5,
-                                                "uso_horario_pico": true,
-                                                "quantidade_equipamentos": 8,
-                                                "tipo_imovel": "Residencial",
-                                                "horas_alto_consumo": 6,
-                                                "quantidade_ar_condicionado": 2,
-                                                "moradores": 4,
-                                                "regiao": "Sudeste"
-                                            }
-                                            """
+                                     name = "Exemplo de requisição completa",
+                                     summary = "Exemplo típico de análise energética com mês de referência",
+                                     value = """
+                                             {
+                                                 "reference_month": "2026-08-01",
+                                                 "consumo_kwh": 350.5,
+                                                 "uso_horario_pico": true,
+                                                 "quantidade_equipamentos": 8,
+                                                 "tipo_imovel": "Residencial",
+                                                 "horas_alto_consumo": 6,
+                                                 "quantidade_ar_condicionado": 2,
+                                                 "moradores": 4,
+                                                 "regiao": "Sudeste"
+                                             }
+                                             """
                             )
                     )
             )
             @Valid @RequestBody AnaliseRequest req) {
         log.info("Análise energética solicitada com novos atributos ONNX: {}", req);
-        AnaliseResponse resp = analiseService.analisar(req);
+        User currentUser = null;
+        try {
+            currentUser = securityUtils.getAuthenticatedUser();
+        } catch (Exception e) {
+            log.info("Requisição de análise recebida em modo não-autenticado: {}", e.getMessage());
+        }
+
+        AnaliseResponse resp = analiseService.analisar(req, currentUser);
         return ResponseEntity.status(201).body(resp);
     }
 }
