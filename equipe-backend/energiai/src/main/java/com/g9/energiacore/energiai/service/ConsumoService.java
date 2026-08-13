@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,7 +42,7 @@ public class ConsumoService {
         return consumos.stream()
                 .map(c -> {
                     AnaliseRequest req = new AnaliseRequest(
-                            c.getReferenceMonth(),
+                            c.getReferenceMonth() != null ? YearMonth.from(c.getReferenceMonth()) : null,
                             c.getConsumoKwh(),
                             c.getUsoHorarioPico(),
                             c.getQuantidadeEquipamentos(),
@@ -63,7 +65,7 @@ public class ConsumoService {
                         "Análise de consumo com ID " + id + " não encontrada para o usuário."));
 
         AnaliseRequest req = new AnaliseRequest(
-                c.getReferenceMonth(),
+                c.getReferenceMonth() != null ? YearMonth.from(c.getReferenceMonth()) : null,
                 c.getConsumoKwh(),
                 c.getUsoHorarioPico(),
                 c.getQuantidadeEquipamentos(),
@@ -84,9 +86,11 @@ public class ConsumoService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Análise de consumo com ID " + id + " não encontrada para o usuário."));
 
+        LocalDate refMonthDate = dto.referenceMonth() != null ? dto.referenceMonth().atDay(1) : null;
+
         // Se o mês de referência foi alterado, verifica se conflita com outra conta do mesmo usuário
-        if (!consumo.getReferenceMonth().equals(dto.referenceMonth())) {
-            Optional<Consumo> existente = consumoRepository.findByUsuarioIdAndReferenceMonth(user.getId(), dto.referenceMonth());
+        if (refMonthDate != null && !refMonthDate.equals(consumo.getReferenceMonth())) {
+            Optional<Consumo> existente = consumoRepository.findByUsuarioIdAndReferenceMonth(user.getId(), refMonthDate);
             if (existente.isPresent() && !existente.get().getId().equals(id)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
                         "O mês de referência " + dto.referenceMonth() + " já possui outra análise cadastrada.");
@@ -100,7 +104,7 @@ public class ConsumoService {
 
         double custoEstimadoMensal = Math.round((dto.consumoKwh() * CUSTO_KWH) * 100.0) / 100.0;
 
-        consumo.setReferenceMonth(dto.referenceMonth());
+        consumo.setReferenceMonth(refMonthDate);
         consumo.setConsumoKwh(dto.consumoKwh());
         consumo.setUsoHorarioPico(dto.usoHorarioPico());
         consumo.setQuantidadeEquipamentos(dto.quantidadeEquipamentos());

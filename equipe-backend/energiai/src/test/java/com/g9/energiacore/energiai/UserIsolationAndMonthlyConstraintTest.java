@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -88,7 +89,7 @@ class UserIsolationAndMonthlyConstraintTest {
     @DisplayName("Isolamento: Usuário B não consegue consultar a análise (GET /consumos/{id}) do Usuário A")
     void deveImpedirUsuarioBDeConsultarConsumoDoUsuarioA() throws Exception {
         AnaliseRequest reqA = new AnaliseRequest(
-                LocalDate.of(2026, 8, 1),
+                YearMonth.of(2026, 8),
                 300.0,
                 true,
                 5,
@@ -118,7 +119,7 @@ class UserIsolationAndMonthlyConstraintTest {
     @Test
     @DisplayName("Regra Mensal: Usuário A enviando duas vezes o mesmo reference_month gera 409 CONFLICT na segunda tentativa")
     void deveGerarConflito409AoEnviarMesmoMesDeReferencia() throws Exception {
-        LocalDate refMonth = LocalDate.of(2026, 8, 1);
+        YearMonth refMonth = YearMonth.of(2026, 8);
 
         AnaliseRequest req1 = new AnaliseRequest(
                 refMonth,
@@ -150,7 +151,7 @@ class UserIsolationAndMonthlyConstraintTest {
     @Test
     @DisplayName("Regra Mensal: Usuário A e Usuário B podem ter análises no mesmo mês de referência sem conflito")
     void devemPermitirAnalisesNoMesmoMesParaUsuariosDiferentes() throws Exception {
-        LocalDate refMonth = LocalDate.of(2026, 8, 1);
+        YearMonth refMonth = YearMonth.of(2026, 8);
 
         AnaliseRequest reqA = new AnaliseRequest(
                 refMonth,

@@ -1,5 +1,6 @@
 package com.g9.energiacore.energiai.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
@@ -7,14 +8,15 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import java.time.LocalDate;
+import java.time.YearMonth;
 
 @Schema(description = "Payload para criação ou atualização de consumo mensal")
 public record ConsumoRequestDTO(
-        @Schema(description = "Mês de referência da conta de energia (AAAA-MM-DD)", example = "2026-08-01")
+        @Schema(description = "Mês de referência da conta de energia (AAAA-MM)", example = "2026-08")
         @JsonProperty("reference_month")
+        @JsonFormat(pattern = "yyyy-MM")
         @NotNull
-        LocalDate referenceMonth,
+        YearMonth referenceMonth,
 
         @Schema(description = "Consumo em kWh", example = "350.5")
         @JsonProperty("consumo_kwh")

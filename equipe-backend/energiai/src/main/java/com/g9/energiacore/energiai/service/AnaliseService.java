@@ -34,7 +34,7 @@ public class AnaliseService {
     @Transactional
     public AnaliseResponse analisar(AnaliseRequest request, User user) {
         LocalDate refMonth = request.referenceMonth() != null 
-                ? request.referenceMonth() 
+                ? request.referenceMonth().atDay(1) 
                 : LocalDate.now().withDayOfMonth(1);
 
         // 1. Verifica se já existe uma análise para usuario_id + reference_month

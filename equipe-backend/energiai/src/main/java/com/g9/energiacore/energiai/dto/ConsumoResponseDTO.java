@@ -19,8 +19,8 @@ public record ConsumoResponseDTO(
         @JsonProperty("quantidade_ar_condicionado") Integer quantidadeArCondicionado,
         @JsonProperty("moradores") Integer moradores,
         @JsonProperty("regiao") Regiao regiao,
-        @JsonProperty("categoria_ia") String categoriaIa,
-        @JsonProperty("probabilidade_ia") Double probabilidadeIa,
+        @JsonProperty("categoria") String categoriaIa,
+        @JsonProperty("probabilidade") Double probabilidadeIa,
         @JsonProperty("custo_estimado_mensal") Double custoEstimadoMensal,
         @JsonProperty("recomendacoes") List<String> recomendacoes,
         @JsonProperty("created_at") OffsetDateTime createdAt

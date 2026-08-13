@@ -50,7 +50,7 @@ public class AuthService {
                 .name(request.name().trim())
                 .email(cleanEmail)
                 .password(passwordEncoder.encode(request.password()))
-                .confirmed(false)
+                .confirmed(true)
                 .build();
 
         user = userRepository.save(user);
@@ -64,11 +64,15 @@ public class AuthService {
 
         tokenRepository.save(confirmationToken);
 
-        emailService.sendConfirmationEmail(user.getEmail(), user.getName(), tokenValue);
+        try {
+            emailService.sendConfirmationEmail(user.getEmail(), user.getName(), tokenValue);
+        } catch (Exception e) {
+            log.warn("Falha ao enviar e-mail de confirmação via Resend para '{}': {}", cleanEmail, e.getMessage());
+        }
 
-        log.info("Novo usuário registrado: '{}'. Token de confirmação gerado com sucesso.", cleanEmail);
+        log.info("Novo usuário registrado e ativo: '{}'. Token de confirmação gerado.", cleanEmail);
 
-        return new MessageResponse("Usuário registrado com sucesso. Verifique seu e-mail para confirmar a conta.");
+        return new MessageResponse("Usuário registrado com sucesso.");
     }
 
     @Transactional
@@ -130,7 +134,13 @@ public class AuthService {
                     .build();
 
             tokenRepository.save(resetToken);
-            emailService.sendForgotPasswordEmail(user.getEmail(), user.getName(), tokenValue);
+
+            try {
+                emailService.sendForgotPasswordEmail(user.getEmail(), user.getName(), tokenValue);
+            } catch (Exception e) {
+                log.warn("Falha ao enviar e-mail de recuperação de senha para '{}': {}", cleanEmail, e.getMessage());
+            }
+
             log.info("Token de recuperação de senha gerado para o e-mail: '{}'", cleanEmail);
         });
 
