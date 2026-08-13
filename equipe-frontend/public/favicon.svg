@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="buzz-gradient" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fab700" />
+      <stop offset="1" stop-color="#fb7c00" />
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="30" height="30" rx="8" fill="url(#buzz-gradient)" />
+  <path
+    d="M17 5 7 17h9l-1 10 10-12h-9l1-10Z"
+    fill="none"
+    stroke="#260f00"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2.5"
+  />
+</svg>
