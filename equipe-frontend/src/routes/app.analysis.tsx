@@ -1,37 +1,76 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Sparkles, DollarSign, Target, CheckCircle2, ArrowRight, Zap } from "lucide-react";
+import { Sparkles, DollarSign, Target, CheckCircle2, ArrowRight, Zap, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AnaliseResponse } from "@/lib/data";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useConsumos } from "@/lib/data";
 
 export const Route = createFileRoute("/app/analysis")({
   component: AnalysisPage,
 });
 
-function AnalysisPage() {
-  const [analise, setAnalise] = useState<AnaliseResponse | null>(null);
+function formatProbability(prob: number): string {
+  if (typeof prob !== "number" || isNaN(prob)) return "0%";
+  const val = prob <= 1 ? prob * 100 : prob;
+  return `${val.toFixed(0)}%`;
+}
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const raw = sessionStorage.getItem("buzz.lastAnalise");
-      if (raw) {
-        try {
-          setAnalise(JSON.parse(raw));
-        } catch (err) {
-          console.warn("Falha ao ler dados da análise:", err);
-        }
-      }
-    }
-  }, []);
+function AnalysisPage() {
+  const { data: consumos, isLoading, isError, error, refetch } = useConsumos();
+
+  const analise = consumos && consumos.length > 0 ? consumos[0] : null;
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-6">
+        <div>
+          <Skeleton className="h-9 w-64" />
+          <Skeleton className="mt-2 h-4 w-96" />
+        </div>
+        <Card className="p-6 space-y-4">
+          <Skeleton className="h-6 w-48" />
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Skeleton className="h-20 w-full rounded-2xl" />
+            <Skeleton className="h-20 w-full rounded-2xl" />
+            <Skeleton className="h-20 w-full rounded-2xl" />
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-6">
+        <div>
+          <h1 className="font-display text-3xl font-bold">Resultado da Análise</h1>
+          <p className="text-sm text-muted-foreground">Erro ao carregar dados do servidor.</p>
+        </div>
+        <Card className="border-destructive/30">
+          <CardContent className="p-8 text-center space-y-4">
+            <AlertCircle className="mx-auto size-10 text-destructive" />
+            <div className="font-display text-lg font-semibold text-foreground">
+              Não foi possível obter o resultado da análise
+            </div>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              {error?.message || "Ocorreu uma falha na comunicação com a API."}
+            </p>
+            <Button onClick={() => refetch()} variant="outline" size="sm">
+              Tentar Novamente
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (!analise) {
     return (
       <div className="mx-auto max-w-2xl space-y-6">
         <div>
           <h1 className="font-display text-3xl font-bold">Resultado da Análise</h1>
-          <p className="text-sm text-muted-foreground">Nenhuma análise realizada no momento.</p>
+          <p className="text-sm text-muted-foreground">Nenhuma análise registrada até o momento.</p>
         </div>
 
         <Card>
@@ -43,8 +82,7 @@ function AnalysisPage() {
               Nenhum resultado de análise disponível
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Envie uma requisição para a API (POST /analise-energetica) para visualizar os
-              resultados.
+              Solicite uma análise energética para visualizar o diagnóstico e as recomendações de IA.
             </p>
             <Button
               asChild
@@ -66,7 +104,7 @@ function AnalysisPage() {
         <div>
           <h1 className="font-display text-3xl font-bold">Resultado da Análise</h1>
           <p className="text-sm text-muted-foreground">
-            Dados processados e retornados pelo backend Spring Boot (POST /analise-energetica)
+            Diagnóstico processado e retornado pela API real em Spring Boot (ONNX).
           </p>
         </div>
         <Button asChild variant="outline" size="sm">
@@ -79,10 +117,10 @@ function AnalysisPage() {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="font-display text-lg font-semibold flex items-center gap-2">
-              <Sparkles className="size-5 text-primary" /> Diagnóstico do Backend
+              <Sparkles className="size-5 text-primary" /> Diagnóstico Energético
             </CardTitle>
             <Badge className="rounded-full bg-primary/15 text-foreground hover:bg-primary/15">
-              API Spring Boot
+              Ref: {analise.reference_month || "Mês Atual"}
             </Badge>
           </div>
         </CardHeader>
@@ -93,7 +131,9 @@ function AnalysisPage() {
             <div className="rounded-2xl border p-4">
               <div className="text-xs text-muted-foreground">categoria</div>
               <div className="mt-1 font-display text-2xl font-bold text-foreground">
-                {analise.categoria || "N/A"}
+                {analise.categoria && analise.categoria !== "N/A"
+                  ? analise.categoria
+                  : "Residencial"}
               </div>
             </div>
 
@@ -103,9 +143,7 @@ function AnalysisPage() {
                 <Target className="size-3.5 text-accent" /> probabilidade
               </div>
               <div className="mt-1 font-display text-2xl font-bold text-foreground">
-                {typeof analise.probabilidade === "number"
-                  ? `${(analise.probabilidade * (analise.probabilidade <= 1 ? 100 : 1)).toFixed(0)}%`
-                  : analise.probabilidade}
+                {formatProbability(analise.probabilidade)}
               </div>
             </div>
 
@@ -122,11 +160,11 @@ function AnalysisPage() {
         </CardContent>
       </Card>
 
-      {/* Recomendações (lista de strings retornadas exatamente pelo backend) */}
+      {/* Recomendações */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="font-display text-lg font-semibold">
-            recomendacoes ({analise.recomendacoes?.length || 0})
+            Recomendações de Economia ({analise.recomendacoes?.length || 0})
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 pt-2">

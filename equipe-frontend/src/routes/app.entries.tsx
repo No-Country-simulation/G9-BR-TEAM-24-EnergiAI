@@ -1,6 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Zap, Loader2, AlertCircle, ArrowRight } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Zap, Loader2, AlertTriangle, ArrowRight, CheckCircle2, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,13 +13,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   useAnaliseEnergetica,
   analiseRequestSchema,
   AnaliseRequest,
   REGIOES,
   Regiao,
+  ApiError,
 } from "@/lib/data";
 import { toast } from "sonner";
 
@@ -26,11 +28,19 @@ export const Route = createFileRoute("/app/entries")({
   component: EntriesPage,
 });
 
+function getCurrentMonthString(): string {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}`;
+}
+
 function EntriesPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const analiseMutation = useAnaliseEnergetica();
 
-  // Estado do formulário correspondente exatamente ao AnaliseRequest (8 campos)
+  // Estado do formulário
   const [consumoKwh, setConsumoKwh] = useState("");
   const [horasAltoConsumo, setHorasAltoConsumo] = useState("3");
   const [quantidadeEquipamentos, setQuantidadeEquipamentos] = useState("5");
@@ -39,9 +49,14 @@ function EntriesPage() {
   const [moradores, setMoradores] = useState("2");
   const [regiao, setRegiao] = useState<string>("Sudeste");
   const [usoHorarioPico, setUsoHorarioPico] = useState(false);
+  const [referenceMonth, setReferenceMonth] = useState(getCurrentMonthString());
+  
+  // Estado local para conflito 409
+  const [conflictError, setConflictError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setConflictError(null);
 
     const payload: AnaliseRequest = {
       consumo_kwh: Number(consumoKwh),
@@ -52,6 +67,7 @@ function EntriesPage() {
       quantidade_ar_condicionado: Number(quantidadeArCondicionado),
       moradores: Number(moradores),
       regiao: regiao as Regiao,
+      reference_month: referenceMonth,
     };
 
     const validation = analiseRequestSchema.safeParse(payload);
@@ -62,16 +78,25 @@ function EntriesPage() {
     }
 
     try {
-      const response = await analiseMutation.mutateAsync(validation.data);
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem("buzz.lastAnalise", JSON.stringify(response));
-        sessionStorage.setItem("buzz.lastPayload", JSON.stringify(validation.data));
-      }
-      toast.success("Análise energética realizada com sucesso!");
+      await analiseMutation.mutateAsync(validation.data);
+      
+      // Invalida o cache do TanStack Query para atualizar o Dashboard e Estatísticas
+      await queryClient.invalidateQueries({ queryKey: ["consumos"] });
+
+      toast.success("Análise energética realizada e registrada com sucesso!");
       navigate({ to: "/app/analysis" });
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "Erro ao se comunicar com a API.";
-      toast.error(errorMsg);
+      if (err instanceof ApiError && err.status === 409) {
+        const msg = "Conflito (HTTP 409): Já existe uma análise registrada para este mês de referência. Apenas 1 análise é permitida por mês.";
+        setConflictError(msg);
+        toast.error("Você já possui uma análise cadastrada para este mês!", {
+          description: "Confira o seu Dashboard ou escolha outro mês de referência.",
+          duration: 6000,
+        });
+      } else {
+        const errorMsg = err instanceof Error ? err.message : "Erro ao se comunicar com a API.";
+        toast.error(errorMsg);
+      }
     }
   };
 
@@ -80,14 +105,41 @@ function EntriesPage() {
       <div>
         <h1 className="font-display text-3xl font-bold">Solicitar Análise Energética</h1>
         <p className="text-sm text-muted-foreground">
-          Preencha os dados abaixo para enviar para processamento no backend.
+          Envie os dados de consumo do imóvel para inferência via inteligência artificial (ONNX).
         </p>
       </div>
+
+      {conflictError && (
+        <Card className="border-destructive/40 bg-destructive/5 shadow-soft">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-destructive font-display text-lg flex items-center gap-2">
+              <AlertTriangle className="size-5 shrink-0" /> Análise Já Existente neste Mês
+            </CardTitle>
+            <CardDescription className="text-destructive/90 text-sm">
+              {conflictError}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2 flex flex-wrap items-center gap-3">
+            <Button asChild size="sm" variant="destructive">
+              <Link to="/app/dashboard">
+                <History className="mr-1.5 size-4" /> Ver Consumos no Dashboard
+              </Link>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setConflictError(null)}
+            >
+              Tentar outro mês
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
           <CardTitle className="font-display text-xl font-semibold flex items-center gap-2">
-            <Zap className="size-5 text-primary" /> Dados da Análise (AnaliseRequest)
+            <Zap className="size-5 text-primary" /> Dados da Análise
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -108,6 +160,20 @@ function EntriesPage() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="reference_month">Mês de Referência</Label>
+                <Input
+                  id="reference_month"
+                  type="month"
+                  value={referenceMonth}
+                  onChange={(e) => setReferenceMonth(e.target.value)}
+                  required
+                  disabled={analiseMutation.isPending}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
                 <Label htmlFor="horas_alto_consumo">Horas de Alto Consumo/dia</Label>
                 <Input
                   id="horas_alto_consumo"
@@ -121,9 +187,7 @@ function EntriesPage() {
                   disabled={analiseMutation.isPending}
                 />
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="quantidade_equipamentos">Qtd. Equipamentos</Label>
                 <Input
@@ -137,7 +201,9 @@ function EntriesPage() {
                   disabled={analiseMutation.isPending}
                 />
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="tipo_imovel">Tipo de Imóvel</Label>
                 <Select
@@ -156,9 +222,7 @@ function EntriesPage() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="quantidade_ar_condicionado">Qtd. Ar-Condicionado</Label>
                 <Input
@@ -172,7 +236,9 @@ function EntriesPage() {
                   disabled={analiseMutation.isPending}
                 />
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="moradores">Moradores</Label>
                 <Input
@@ -186,22 +252,22 @@ function EntriesPage() {
                   disabled={analiseMutation.isPending}
                 />
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="regiao">Região</Label>
-              <Select value={regiao} onValueChange={setRegiao} disabled={analiseMutation.isPending}>
-                <SelectTrigger id="regiao">
-                  <SelectValue placeholder="Selecione a região..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {REGIOES.map((item) => (
-                    <SelectItem key={item} value={item}>
-                      {item}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <Label htmlFor="regiao">Região</Label>
+                <Select value={regiao} onValueChange={setRegiao} disabled={analiseMutation.isPending}>
+                  <SelectTrigger id="regiao">
+                    <SelectValue placeholder="Selecione a região..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {REGIOES.map((item) => (
+                      <SelectItem key={item} value={item}>
+                        {item}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="flex items-center justify-between rounded-xl border p-4">
@@ -210,7 +276,7 @@ function EntriesPage() {
                   Uso em Horário de Pico
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  Indica se há alto uso de equipamentos no horário de pico
+                  Concentração de consumo no horário das 18h às 21h
                 </p>
               </div>
               <Switch
@@ -221,15 +287,6 @@ function EntriesPage() {
               />
             </div>
 
-            {analiseMutation.isError && (
-              <div className="flex items-center gap-2 rounded-xl bg-destructive/10 p-3 text-xs text-destructive">
-                <AlertCircle className="size-4 shrink-0" />
-                <span>
-                  {analiseMutation.error?.message || "Ocorreu um erro ao enviar a análise."}
-                </span>
-              </div>
-            )}
-
             <Button
               type="submit"
               disabled={analiseMutation.isPending}
@@ -237,7 +294,7 @@ function EntriesPage() {
             >
               {analiseMutation.isPending ? (
                 <>
-                  <Loader2 className="mr-2 size-4 animate-spin" /> Enviando para a API…
+                  <Loader2 className="mr-2 size-4 animate-spin" /> Enviando para API Real…
                 </>
               ) : (
                 <>
