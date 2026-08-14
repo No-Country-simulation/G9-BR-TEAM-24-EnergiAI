@@ -43,7 +43,7 @@ function TermsPage() {
                 Acordo de Sanidade e Termos de Luz
               </CardTitle>
               <CardDescription className="text-muted-foreground text-sm mt-1">
-                Edição Especial Hackathon Atom 2026 — Leia com atenção e um sorriso no rosto.
+                Edição Especial Hackathon ONE BR 2026 — Leia com atenção e um sorriso no rosto.
               </CardDescription>
             </CardHeader>
 
