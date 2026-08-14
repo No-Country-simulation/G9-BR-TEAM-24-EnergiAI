@@ -6,9 +6,7 @@ export type Regiao = (typeof REGIOES)[number];
 export const analiseRequestSchema = z.object({
   consumo_kwh: z.number().positive("Consumo (kWh) deve ser maior que zero"),
   uso_horario_pico: z.boolean(),
-  quantidade_equipamentos: z
-    .number()
-    .min(1, "Quantidade de equipamentos deve ser no mínimo 1"),
+  quantidade_equipamentos: z.number().min(1, "Quantidade de equipamentos deve ser no mínimo 1"),
   tipo_imovel: z.string().min(1, "Informe o tipo de imóvel"),
   horas_alto_consumo: z
     .number()
@@ -138,11 +136,7 @@ export function parseAnaliseResponse(item: any, fallbackPayload?: AnaliseRequest
   }
 
   const categoria =
-    item.categoria ||
-    item.category ||
-    item.categoriaEnergia ||
-    item.perfil ||
-    "N/A";
+    item.categoria || item.category || item.categoriaEnergia || item.perfil || "N/A";
 
   const probRaw = item.probabilidade ?? item.probability ?? item.precisao ?? item.score;
   const probabilidade = typeof probRaw === "number" ? probRaw : Number(probRaw || 0);
@@ -160,10 +154,7 @@ export function parseAnaliseResponse(item: any, fallbackPayload?: AnaliseRequest
   const recomendacoes = Array.isArray(recsRaw) ? recsRaw.map(String) : [];
 
   const consumoRaw =
-    item.consumo_kwh ??
-    item.consumoKwh ??
-    item.consumo ??
-    fallbackPayload?.consumo_kwh;
+    item.consumo_kwh ?? item.consumoKwh ?? item.consumo ?? fallbackPayload?.consumo_kwh;
   const consumo_kwh = typeof consumoRaw === "number" ? consumoRaw : Number(consumoRaw || 0);
 
   const refMonth =
@@ -210,7 +201,12 @@ export const api = {
     }
   },
 
-  async register(data: { name: string; email: string; password: string; level: string }): Promise<AuthResponse> {
+  async register(data: {
+    name: string;
+    email: string;
+    password: string;
+    level: string;
+  }): Promise<AuthResponse> {
     try {
       const resData = await fetchWithAuth("/auth/register", {
         method: "POST",
@@ -243,11 +239,23 @@ export const api = {
   async resetPassword(token: string, newPassword: string): Promise<void> {
     await fetchWithAuth("/auth/reset-password", {
       method: "POST",
-      body: JSON.stringify({ token, password: newPassword }),
+      body: JSON.stringify({ token, newPassword }),
     });
   },
 
-  async contactUs(data: { name: string; email: string; message: string }): Promise<void> {
+  async verifyEmail(token: string): Promise<void> {
+    await fetchWithAuth("/auth/verify-email", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    });
+  },
+
+  async contactUs(data: {
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+  }): Promise<void> {
     await fetchWithAuth("/contact-us", {
       method: "POST",
       body: JSON.stringify(data),
@@ -282,7 +290,10 @@ export const api = {
     });
   },
 
-  async updateConsumo(id: string | number, payload: Partial<AnaliseRequest>): Promise<AnaliseResponse> {
+  async updateConsumo(
+    id: string | number,
+    payload: Partial<AnaliseRequest>,
+  ): Promise<AnaliseResponse> {
     const data = await fetchWithAuth(`/consumos/${id}`, {
       method: "PUT",
       body: JSON.stringify(payload),

@@ -39,7 +39,11 @@ export function useDeleteConsumo() {
 
 export function useUpdateConsumo() {
   const queryClient = useQueryClient();
-  return useMutation<AnaliseResponse, Error, { id: string | number; payload: Partial<AnaliseRequest> }>({
+  return useMutation<
+    AnaliseResponse,
+    Error,
+    { id: string | number; payload: Partial<AnaliseRequest> }
+  >({
     mutationFn: ({ id, payload }) => api.updateConsumo(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["consumos"] });
@@ -48,7 +52,11 @@ export function useUpdateConsumo() {
 }
 
 export function useContactUs() {
-  return useMutation<void, Error, { name: string; email: string; message: string }>({
+  return useMutation<
+    void,
+    Error,
+    { name: string; email: string; subject: string; message: string }
+  >({
     mutationFn: (data) => api.contactUs(data),
   });
 }
@@ -56,5 +64,17 @@ export function useContactUs() {
 export function useForgotPassword() {
   return useMutation<void, Error, string>({
     mutationFn: (email: string) => api.forgotPassword(email),
+  });
+}
+
+export function useResetPassword() {
+  return useMutation<void, Error, { token: string; newPassword: string }>({
+    mutationFn: ({ token, newPassword }) => api.resetPassword(token, newPassword),
+  });
+}
+
+export function useVerifyEmail() {
+  return useMutation<void, Error, string>({
+    mutationFn: (token: string) => api.verifyEmail(token),
   });
 }

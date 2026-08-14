@@ -78,16 +78,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signup: AuthCtx["signup"] = async ({ name, email, password, level }) => {
-    const res = await api.register({ name, email, password, level });
-    const u: BuzzUser = {
-      id: res.user.id,
-      name: res.user.name || name,
-      email: res.user.email || email,
-      level: res.user.level || level,
-      createdAt: res.user.createdAt || new Date().toISOString(),
-      onboarded: false,
-    };
-    persist(res.token, u);
+    await api.register({ name, email, password, level });
+    // Não efetua o login automático pois a conta exige ativação via e-mail
   };
 
   const logout = () => persist(null, null);
