@@ -85,9 +85,9 @@ function SignupPage() {
           <ul className="mt-8 space-y-3 text-sm">
             {[
               "Análise mensal automática",
-              "Perfil de eficiência A–E",
+              "Diagnóstico de Perfil Energético",
               "Recomendações com impacto em R$",
-              "Conquistas e níveis",
+              "Histórico e Evolução de Consumo",
             ].map((f) => (
               <li key={f} className="flex items-center gap-2">
                 <span className="grid size-6 place-items-center rounded-full bg-success text-success-foreground">
@@ -172,7 +172,13 @@ function SignupPage() {
                   onCheckedChange={(v) => setTerms(!!v)}
                   className="mt-0.5"
                 />
-                <span>Aceito os termos de uso e política de privacidade.</span>
+                <span>
+                  Aceito os{" "}
+                  <Link to="/terms" target="_blank" className="text-primary hover:underline font-medium">
+                    termos de uso e política de privacidade
+                  </Link>
+                  .
+                </span>
               </label>
               <Button
                 type="submit"

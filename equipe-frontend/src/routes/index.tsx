@@ -47,10 +47,9 @@ function Splash() {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.25 }}
-          className="mt-4 max-w-xl text-lg text-muted-foreground sm:text-xl"
+          className="mt-4 max-w-2xl text-lg text-muted-foreground sm:text-xl"
         >
-          Sua jornada gamificada para dominar o consumo de energia. Analise, classifique e
-          economize.
+          Sua plataforma de gestão e eficiência energética. Analise dados de consumo, mude hábitos e otimize seus custos elétricos.
         </motion.p>
 
         <motion.div
@@ -61,7 +60,7 @@ function Splash() {
         >
           {[
             { icon: Sparkles, title: "Analise", text: "Padrões de consumo mês a mês" },
-            { icon: Award, title: "Classifique", text: "Descubra seu perfil A–E" },
+            { icon: Award, title: "Classifique", text: "Descubra seu Perfil de Eficiência" },
             { icon: TrendingDown, title: "Economize", text: "Recomendações + impacto em R$" },
           ].map((f, i) => (
             <motion.div
