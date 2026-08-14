@@ -1,5 +1,6 @@
 package com.g9.energiacore.energiai.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
@@ -7,8 +8,15 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.time.YearMonth;
+
 @Schema(description = "Payload com dados de consumo e características do imóvel para análise energética pelo modelo de IA")
 public record AnaliseRequest(
+        @Schema(description = "Mês de referência da conta de energia (AAAA-MM)", example = "2026-08")
+        @JsonProperty("reference_month")
+        @JsonFormat(pattern = "yyyy-MM")
+        YearMonth referenceMonth,
+
         @Schema(description = "Consumo total de energia elétrica em kWh no mês", example = "350.5")
         @JsonProperty("consumo_kwh")
         @NotNull

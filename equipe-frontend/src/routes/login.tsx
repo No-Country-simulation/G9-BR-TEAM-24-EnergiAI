@@ -1,19 +1,28 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Zap, Loader2 } from "lucide-react";
+import { Zap, Loader2, KeyRound, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth";
+import { useForgotPassword } from "@/lib/data";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Entrar — Buzz" },
-      { name: "description", content: "Acesse sua jornada de eficiência energética no Buzz." },
+      { title: "Entrar — BeeBuzz" },
+      { name: "description", content: "Acesse sua jornada de eficiência energética no BeeBuzz." },
     ],
   }),
   component: LoginPage,
@@ -22,10 +31,17 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const forgotPasswordMutation = useForgotPassword();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
+
+  // Estado para Modal Esqueci a Senha
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSuccess, setForgotSuccess] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,10 +52,31 @@ function LoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      toast.success("Bem-vindo de volta ao Buzz!");
+      toast.success("Bem-vindo de volta ao BeeBuzz!");
       navigate({ to: "/app/dashboard" });
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Falha na autenticação. Verifique e-mail e senha.";
+      toast.error(msg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail.includes("@")) {
+      toast.error("Informe um e-mail válido.");
+      return;
+    }
+
+    try {
+      await forgotPasswordMutation.mutateAsync(forgotEmail);
+      setForgotSuccess(true);
+      toast.success("Instruções enviadas para seu e-mail!");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro ao solicitar recuperação de senha.";
+      toast.error(msg);
     }
   };
 
@@ -55,19 +92,14 @@ function LoginPage() {
             <div className="grid size-10 place-items-center rounded-xl gradient-primary-bg">
               <Zap className="size-5 text-primary-foreground" />
             </div>
-            <span className="font-display text-2xl font-bold">Buzz</span>
+            <span className="font-display text-2xl font-bold">BeeBuzz</span>
           </Link>
           <h1 className="mt-10 font-display text-5xl font-bold tracking-tight">
             Bem-vindo <br /> de volta.
           </h1>
           <p className="mt-4 max-w-md text-lg text-muted-foreground">
-            Continue sua jornada. Sua economia acumulada e conquistas te esperam.
+            Continue sua jornada. Sua economia acumulada e diagnósticos de IA te esperam.
           </p>
-          <div className="mt-10 glass rounded-3xl p-6 shadow-soft">
-            <div className="text-sm text-muted-foreground">Você economizou</div>
-            <div className="mt-1 font-display text-4xl font-bold text-primary">R$ 248,90</div>
-            <div className="mt-2 text-sm">nos últimos 3 meses aplicando dicas do Buzz.</div>
-          </div>
         </motion.aside>
 
         <motion.div
@@ -80,27 +112,12 @@ function LoginPage() {
               <div className="grid size-9 place-items-center rounded-xl gradient-primary-bg">
                 <Zap className="size-4 text-primary-foreground" />
               </div>
-              <span className="font-display text-xl font-bold">Buzz</span>
+              <span className="font-display text-xl font-bold">BeeBuzz</span>
             </div>
             <h2 className="font-display text-2xl font-bold">Entrar</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Bom te ver de novo.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Acesse sua conta com seu e-mail.</p>
 
-            <Button variant="outline" className="mt-6 w-full" type="button">
-              <svg className="size-4" viewBox="0 0 24 24">
-                <path
-                  fill="#EA4335"
-                  d="M12 10.2v3.7h5.2c-.2 1.3-1.6 3.7-5.2 3.7-3.1 0-5.7-2.6-5.7-5.7s2.6-5.7 5.7-5.7c1.8 0 3 .8 3.7 1.4l2.5-2.4C16.7 3.7 14.6 2.7 12 2.7 6.9 2.7 2.8 6.8 2.8 12s4.1 9.3 9.2 9.3c5.3 0 8.8-3.7 8.8-9 0-.6-.1-1.1-.2-1.6H12z"
-                />
-              </svg>
-              Continuar com Google
-            </Button>
-
-            <div className="relative my-6 text-center text-xs text-muted-foreground">
-              <span className="bg-card/70 px-3">ou entre com e-mail</span>
-              <div className="absolute inset-x-0 top-1/2 -z-10 h-px bg-border" />
-            </div>
-
-            <form onSubmit={onSubmit} className="space-y-4">
+            <form onSubmit={onSubmit} className="mt-6 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">E-mail</Label>
                 <Input
@@ -116,13 +133,78 @@ function LoginPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Senha</Label>
-                  <button
-                    type="button"
-                    className="text-xs text-primary hover:underline"
-                    onClick={() => toast.info("Enviamos instruções para o seu e-mail.")}
-                  >
-                    Esqueci a senha
-                  </button>
+
+                  {/* Modal de Recuperação de Senha */}
+                  <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+                    <DialogTrigger asChild>
+                      <button
+                        type="button"
+                        className="text-xs text-primary hover:underline"
+                        onClick={() => {
+                          setForgotEmail(email);
+                          setForgotSuccess(false);
+                        }}
+                      >
+                        Esqueci a senha
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 font-display">
+                          <KeyRound className="size-5 text-primary" /> Recuperar Senha
+                        </DialogTitle>
+                        <DialogDescription>
+                          Informe seu e-mail cadastrado para receber as instruções de redefinição de
+                          senha (POST /auth/forgot-password).
+                        </DialogDescription>
+                      </DialogHeader>
+
+                      {forgotSuccess ? (
+                        <div className="p-4 text-center space-y-3">
+                          <div className="mx-auto grid size-12 place-items-center rounded-full bg-success/15 text-success">
+                            <CheckCircle2 className="size-6" />
+                          </div>
+                          <div className="text-sm font-semibold">
+                            E-mail de recuperação enviado!
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Verifique sua caixa de entrada e spam.
+                          </p>
+                          <Button size="sm" onClick={() => setForgotOpen(false)} className="mt-2">
+                            Fechar
+                          </Button>
+                        </div>
+                      ) : (
+                        <form onSubmit={handleForgotPassword} className="space-y-4 pt-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="forgot-email">Seu E-mail</Label>
+                            <Input
+                              id="forgot-email"
+                              type="email"
+                              value={forgotEmail}
+                              onChange={(e) => setForgotEmail(e.target.value)}
+                              placeholder="voce@exemplo.com"
+                              required
+                              disabled={forgotPasswordMutation.isPending}
+                            />
+                          </div>
+                          <Button
+                            type="submit"
+                            disabled={forgotPasswordMutation.isPending}
+                            className="w-full gradient-primary-bg text-primary-foreground"
+                          >
+                            {forgotPasswordMutation.isPending ? (
+                              <>
+                                <Loader2 className="mr-2 size-4 animate-spin" /> Enviando…
+                              </>
+                            ) : (
+                              "Enviar link de recuperação"
+                            )}
+                          </Button>
+                        </form>
+                      )}
+                    </DialogContent>
+                  </Dialog>
                 </div>
                 <Input
                   id="password"

@@ -13,8 +13,7 @@ import java.io.InputStream;
  * Responsável por carregar o modelo binário a partir do classpath ou mock local.
  * Preparado para ser substituído transparentemente pelo OciStorageService em ambientes de produção.
  */
-@Service
-@Primary
+@Service("classpathModelStorageService")
 public class ClasspathModelStorageService implements ModelStorageService {
 
     private static final Logger log = LoggerFactory.getLogger(ClasspathModelStorageService.class);

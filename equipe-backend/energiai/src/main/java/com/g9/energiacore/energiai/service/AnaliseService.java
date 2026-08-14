@@ -1,13 +1,20 @@
 package com.g9.energiacore.energiai.service;
 
+import com.g9.energiacore.energiai.domain.Consumo;
+import com.g9.energiacore.energiai.domain.User;
 import com.g9.energiacore.energiai.dto.AnaliseRequest;
 import com.g9.energiacore.energiai.dto.AnaliseResponse;
 import com.g9.energiacore.energiai.dto.Regiao;
 import com.g9.energiacore.energiai.infra.ai.InferenceResult;
 import com.g9.energiacore.energiai.infra.ai.OnnxInferenceService;
+import com.g9.energiacore.energiai.repository.ConsumoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,31 +23,68 @@ public class AnaliseService {
 
     private static final double CUSTO_KWH = 0.75;
     private final OnnxInferenceService onnxInferenceService;
+    private final ConsumoRepository consumoRepository;
 
     @Autowired
-    public AnaliseService(OnnxInferenceService onnxInferenceService) {
+    public AnaliseService(OnnxInferenceService onnxInferenceService, ConsumoRepository consumoRepository) {
         this.onnxInferenceService = onnxInferenceService;
+        this.consumoRepository = consumoRepository;
     }
 
-    public AnaliseResponse analisar(AnaliseRequest request) {
-        // 1. Executa a inferência preditiva desacoplada através da camada ONNX
+    @Transactional
+    public AnaliseResponse analisar(AnaliseRequest request, User user) {
+        LocalDate refMonth = request.referenceMonth() != null 
+                ? request.referenceMonth().atDay(1) 
+                : LocalDate.now().withDayOfMonth(1);
+
+        // 1. Verifica se já existe uma análise para usuario_id + reference_month
+        if (user != null && user.getId() != null) {
+            if (consumoRepository.existsByUsuarioIdAndReferenceMonth(user.getId(), refMonth)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Já existe uma análise energética registrada para o mês de referência " + refMonth);
+            }
+        }
+
+        // 2. Executa a inferência preditiva desacoplada via ONNX
         InferenceResult inferenceResult = onnxInferenceService.executarInferenciador(request);
 
         String categoria = inferenceResult.categoria();
         double probabilidade = inferenceResult.probabilidade();
 
-        // 2. Gera recomendações contextuais detalhadas considerando todos os atributos do imóvel e da região
+        // 3. Recomendações e cálculo financeiro
         List<String> recomendacoes = gerarRecomendacoes(request);
-
-        // 3. Cálculo de estimativa financeira
         double consumoKwh = request.consumoKwh() != null ? request.consumoKwh() : 0.0;
         double custoEstimado = consumoKwh * CUSTO_KWH;
         double custoEstimadoMensal = Math.round(custoEstimado * 100.0) / 100.0;
 
-        return new AnaliseResponse(categoria, probabilidade, recomendacoes, custoEstimadoMensal);
+        Long consumoId = null;
+
+        // 4. Persiste a entidade Consumo se o usuário estiver autenticado
+        if (user != null && user.getId() != null) {
+            Consumo consumo = Consumo.builder()
+                    .usuarioId(user.getId())
+                    .referenceMonth(refMonth)
+                    .consumoKwh(request.consumoKwh())
+                    .usoHorarioPico(request.usoHorarioPico())
+                    .quantidadeEquipamentos(request.quantidadeEquipamentos())
+                    .tipoImovel(request.tipoImovel())
+                    .horasAltoConsumo(request.horasAltoConsumo())
+                    .quantidadeArCondicionado(request.quantidadeArCondicionado())
+                    .moradores(request.moradores())
+                    .regiao(request.regiao())
+                    .categoriaIa(categoria)
+                    .probabilidadeIa(probabilidade)
+                    .custoEstimadoMensal(custoEstimadoMensal)
+                    .build();
+
+            consumo = consumoRepository.save(consumo);
+            consumoId = consumo.getId();
+        }
+
+        return new AnaliseResponse(consumoId, refMonth, categoria, probabilidade, recomendacoes, custoEstimadoMensal);
     }
 
-    private List<String> gerarRecomendacoes(AnaliseRequest request) {
+    public List<String> gerarRecomendacoes(AnaliseRequest request) {
         List<String> recomendacoes = new ArrayList<>();
 
         if (Boolean.TRUE.equals(request.usoHorarioPico())) {

@@ -80,26 +80,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Buzz - Sua jornada de eficiência energética" },
+      { title: "BeeBuzz - Sua jornada de eficiência energética" },
       {
         name: "description",
         content:
-          "Buzz é o app gamificado que ajuda você a analisar consumo, descobrir seu perfil de eficiência energética e economizar de verdade.",
+          "BeeBuzz é o app gamificado que ajuda você a analisar consumo, descobrir seu perfil de eficiência energética e economizar de verdade.",
       },
-      { name: "author", content: "Buzz" },
-      { property: "og:title", content: "Buzz — Sua jornada de eficiência energética" },
+      { name: "author", content: "BeeBuzz" },
+      { property: "og:title", content: "BeeBuzz — Sua jornada de eficiência energética" },
       {
         property: "og:description",
         content:
-          "Buzz é o app gamificado que ajuda você a analisar consumo, descobrir seu perfil de eficiência energética e economizar de verdade.",
+          "BeeBuzz é o app gamificado que ajuda você a analisar consumo, descobrir seu perfil de eficiência energética e economizar de verdade.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Buzz — Sua jornada de eficiência energética" },
+      { name: "twitter:title", content: "BeeBuzz — Sua jornada de eficiência energética" },
       {
         name: "twitter:description",
         content:
-          "Buzz é o app gamificado que ajuda você a analisar consumo, descobrir seu perfil de eficiência energética e economizar de verdade.",
+          "BeeBuzz é o app gamificado que ajuda você a analisar consumo, descobrir seu perfil de eficiência energética e economizar de verdade.",
       },
     ],
     links: [

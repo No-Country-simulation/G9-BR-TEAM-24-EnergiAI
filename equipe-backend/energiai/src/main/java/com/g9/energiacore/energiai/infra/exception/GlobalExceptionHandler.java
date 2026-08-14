@@ -91,6 +91,81 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<StandardError> handleIllegalArgument(
+            IllegalArgumentException ex,
+            HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        log.warn("Requisição inválida em {}: {}", request.getRequestURI(), ex.getMessage());
+
+        StandardError err = new StandardError(
+                Instant.now(),
+                status.value(),
+                "Requisição Inválida",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(err);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<StandardError> handleIllegalState(
+            IllegalStateException ex,
+            HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.FORBIDDEN;
+        log.warn("Acesso não permitido / Estado inválido em {}: {}", request.getRequestURI(), ex.getMessage());
+
+        StandardError err = new StandardError(
+                Instant.now(),
+                status.value(),
+                "Acesso Proibido",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(err);
+    }
+
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<StandardError> handleResponseStatus(
+            org.springframework.web.server.ResponseStatusException ex,
+            HttpServletRequest request) {
+
+        log.warn("Exceção HTTP {} em {}: {}", ex.getStatusCode(), request.getRequestURI(), ex.getReason());
+
+        StandardError err = new StandardError(
+                Instant.now(),
+                ex.getStatusCode().value(),
+                ex.getStatusCode().toString(),
+                ex.getReason() != null ? ex.getReason() : ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(ex.getStatusCode()).body(err);
+    }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<StandardError> handleDataIntegrityViolation(
+            org.springframework.dao.DataIntegrityViolationException ex,
+            HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.CONFLICT;
+        log.warn("Violação de integridade de dados em {}: {}", request.getRequestURI(), ex.getMessage());
+
+        StandardError err = new StandardError(
+                Instant.now(),
+                status.value(),
+                "Conflito de Dados",
+                "Já existe um registro com os mesmos dados de referência para este usuário.",
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(status).body(err);
+    }
+
     // -------------------------------------------------------
     // CRITÉRIOS 5 e 6
     // Trata qualquer erro inesperado que não foi tratado acima
