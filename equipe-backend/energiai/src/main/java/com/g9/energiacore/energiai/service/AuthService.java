@@ -50,7 +50,7 @@ public class AuthService {
                 .name(request.name().trim())
                 .email(cleanEmail)
                 .password(passwordEncoder.encode(request.password()))
-                .confirmed(true)
+                .confirmed(false)
                 .build();
 
         user = userRepository.save(user);
@@ -70,7 +70,7 @@ public class AuthService {
             log.warn("Falha ao enviar e-mail de confirmação via Resend para '{}': {}", cleanEmail, e.getMessage());
         }
 
-        log.info("Novo usuário registrado e ativo: '{}'. Token de confirmação gerado.", cleanEmail);
+        log.info("Novo usuário registrado com e-mail: '{}'. Aguardando confirmação via token.", cleanEmail);
 
         return new MessageResponse("Usuário registrado com sucesso.");
     }
@@ -135,10 +135,13 @@ public class AuthService {
 
             tokenRepository.save(resetToken);
 
+            String resetUrl = emailService.getFrontendUrl() + "/reset-password?token=" + tokenValue;
+            log.debug("Link de recuperação de senha gerado para '{}': {}", cleanEmail, resetUrl);
+
             try {
                 emailService.sendForgotPasswordEmail(user.getEmail(), user.getName(), tokenValue);
             } catch (Exception e) {
-                log.warn("Falha ao enviar e-mail de recuperação de senha para '{}': {}", cleanEmail, e.getMessage());
+                log.warn("Falha ao agendar envio de e-mail de recuperação de senha para '{}': {}", cleanEmail, e.getMessage());
             }
 
             log.info("Token de recuperação de senha gerado para o e-mail: '{}'", cleanEmail);

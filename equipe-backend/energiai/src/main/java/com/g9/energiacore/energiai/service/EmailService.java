@@ -3,6 +3,7 @@ package com.g9.energiacore.energiai.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -34,9 +35,21 @@ public class EmailService {
                 .build();
     }
 
+    public String getFrontendUrl() {
+        if (frontendUrl == null || frontendUrl.isBlank()) {
+            return "http://localhost:5173";
+        }
+        String trimmed = frontendUrl.trim();
+        return trimmed.endsWith("/") ? trimmed.substring(0, trimmed.length() - 1) : trimmed;
+    }
+
+    @Async
     public void sendConfirmationEmail(String toEmail, String recipientName, String token) {
+        String baseUrl = getFrontendUrl();
+        String link = baseUrl + "/verify-email?token=" + token;
+        log.debug("Link de confirmação de e-mail gerado para {}: {}", toEmail, link);
+
         String subject = "Confirmação de E-mail — EnergiAI / BeeBuzz";
-        String link = frontendUrl + "/verify-email?token=" + token;
         String htmlContent = String.format("""
                 <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
                     <h2 style="color: #16a34a;">Olá, %s!</h2>
@@ -53,9 +66,13 @@ public class EmailService {
         sendEmail(toEmail, subject, htmlContent);
     }
 
+    @Async
     public void sendForgotPasswordEmail(String toEmail, String recipientName, String token) {
+        String baseUrl = getFrontendUrl();
+        String link = baseUrl + "/reset-password?token=" + token;
+        log.debug("Link de recuperação de senha gerado para {}: {}", toEmail, link);
+
         String subject = "Recuperação de Senha — EnergiAI / BeeBuzz";
-        String link = frontendUrl + "/reset-password?token=" + token;
         String htmlContent = String.format("""
                 <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
                     <h2 style="color: #2563eb;">Olá, %s!</h2>
@@ -72,6 +89,7 @@ public class EmailService {
         sendEmail(toEmail, subject, htmlContent);
     }
 
+    @Async
     public void sendContactUsEmail(String fromName, String fromEmail, String subject, String messageContent) {
         String mailSubject = "Novo Contato via Formulário: " + subject;
         String htmlContent = String.format("""
@@ -89,9 +107,11 @@ public class EmailService {
         sendEmail(resendFromEmail, mailSubject, htmlContent);
     }
 
+    @Async
     public void sendEmail(String to, String subject, String htmlContent) {
         if (resendApiKey == null || resendApiKey.isBlank()) {
             log.warn("RESEND_API_KEY não configurada. E-mail simulado no log. Para: '{}', Assunto: '{}'", to, subject);
+            log.debug("Conteúdo do e-mail simulado para '{}':\n{}", to, htmlContent);
             return;
         }
 
@@ -120,12 +140,12 @@ public class EmailService {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                log.info("E-mail enviado com sucesso via Resend para '{}'", to);
+                log.info("E-mail enviado com sucesso via Resend para '{}' (HTTP {}). Response Body: {}", to, response.statusCode(), response.body());
             } else {
-                log.error("Erro ao enviar e-mail via Resend API (HTTP {}): {}", response.statusCode(), response.body());
+                log.error("Erro ao enviar e-mail via Resend API (HTTP {}). Response Body: {}", response.statusCode(), response.body());
             }
         } catch (Exception e) {
-            log.error("Falha na comunicação com a API da Resend: {}", e.getMessage(), e);
+            log.error("Falha na comunicação/rede com a API da Resend ao enviar para '{}': {}", to, e.getMessage(), e);
         }
     }
 
