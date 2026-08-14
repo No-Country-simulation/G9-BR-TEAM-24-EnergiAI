@@ -21,7 +21,7 @@ public class EmailService {
     @Value("${RESEND_API_KEY:}")
     private String resendApiKey;
 
-    @Value("${RESEND_FROM_EMAIL:onboarding@resend.dev}")
+    @Value("${RESEND_FROM_EMAIL:suporte@mail.nebula-labs.tech}")
     private String resendFromEmail;
 
     @Value("${FRONTEND_URL:http://localhost:5173}")
@@ -52,13 +52,13 @@ public class EmailService {
         String subject = "Confirmação de E-mail — EnergiAI / BeeBuzz";
         String htmlContent = String.format("""
                 <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
-                    <h2 style="color: #16a34a;">Olá, %s!</h2>
+                    <h2 style="color: #ea580c;">Olá, %s!</h2>
                     <p>Obrigado por se cadastrar no <strong>EnergiAI / BeeBuzz</strong>.</p>
                     <p>Para ativar sua conta e concluir seu cadastro, clique no botão abaixo:</p>
                     <div style="margin: 25px 0;">
-                        <a href="%s" style="background-color: #16a34a; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Confirmar Minha Conta</a>
+                        <a href="%s" style="background-color: #ea580c; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Confirmar Minha Conta</a>
                     </div>
-                    <p style="font-size: 13px; color: #666;">Ou acesse diretamente o link: <br/><a href="%s" style="color: #2563eb;">%s</a></p>
+                    <p style="font-size: 13px; color: #666;">Ou acesse diretamente o link: <br/><a href="%s" style="color: #ea580c;">%s</a></p>
                     <p style="margin-top: 20px; font-size: 12px; color: #777;">Este link expira em 24 horas.</p>
                 </div>
                 """, recipientName, link, link, link);
@@ -75,13 +75,13 @@ public class EmailService {
         String subject = "Recuperação de Senha — EnergiAI / BeeBuzz";
         String htmlContent = String.format("""
                 <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
-                    <h2 style="color: #2563eb;">Olá, %s!</h2>
+                    <h2 style="color: #ea580c;">Olá, %s!</h2>
                     <p>Recebemos uma solicitação de redefinição de senha para sua conta no <strong>EnergiAI / BeeBuzz</strong>.</p>
                     <p>Para criar uma nova senha, clique no botão abaixo:</p>
                     <div style="margin: 25px 0;">
-                        <a href="%s" style="background-color: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Redefinir Minha Senha</a>
+                        <a href="%s" style="background-color: #ea580c; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Redefinir Minha Senha</a>
                     </div>
-                    <p style="font-size: 13px; color: #666;">Ou acesse diretamente o link: <br/><a href="%s" style="color: #2563eb;">%s</a></p>
+                    <p style="font-size: 13px; color: #666;">Ou acesse diretamente o link: <br/><a href="%s" style="color: #ea580c;">%s</a></p>
                     <p style="margin-top: 20px; font-size: 12px; color: #777;">Este link expira em 1 hora. Caso não tenha solicitado a alteração, ignore este e-mail.</p>
                 </div>
                 """, recipientName, link, link, link);
