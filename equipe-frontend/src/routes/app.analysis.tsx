@@ -1,13 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  Sparkles,
-  DollarSign,
-  Target,
-  CheckCircle2,
-  ArrowRight,
-  Zap,
-  AlertCircle,
-} from "lucide-react";
+import { Sparkles, DollarSign, Target, CheckCircle2, ArrowRight, Zap, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -62,7 +54,7 @@ function AnalysisPage() {
               Não foi possível obter o resultado da análise
             </div>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              {error?.message || "Ocorreu uma falha na comunicação com a API."}
+              {error?.message || "Ocorreu uma falha na comunicação com o servidor."}
             </p>
             <Button onClick={() => refetch()} variant="outline" size="sm">
               Tentar Novamente
@@ -90,8 +82,7 @@ function AnalysisPage() {
               Nenhum resultado de análise disponível
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Solicite uma análise energética para visualizar o diagnóstico e as recomendações de
-              IA.
+              Solicite uma análise energética para visualizar o diagnóstico e as recomendações de economia.
             </p>
             <Button
               asChild
@@ -113,7 +104,7 @@ function AnalysisPage() {
         <div>
           <h1 className="font-display text-3xl font-bold">Resultado da Análise</h1>
           <p className="text-sm text-muted-foreground">
-            Diagnóstico processado e retornado pela API real em Spring Boot (ONNX).
+            Diagnóstico processado com base nos dados do seu imóvel.
           </p>
         </div>
         <Button asChild variant="outline" size="sm">
@@ -138,7 +129,7 @@ function AnalysisPage() {
           <div className="grid gap-4 sm:grid-cols-3">
             {/* Categoria */}
             <div className="rounded-2xl border p-4">
-              <div className="text-xs text-muted-foreground">categoria</div>
+              <div className="text-xs text-muted-foreground">Categoria de Eficiência</div>
               <div className="mt-1 font-display text-2xl font-bold text-foreground">
                 {analise.categoria && analise.categoria !== "N/A"
                   ? analise.categoria
@@ -149,7 +140,7 @@ function AnalysisPage() {
             {/* Probabilidade */}
             <div className="rounded-2xl border p-4">
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Target className="size-3.5 text-accent" /> probabilidade
+                <Target className="size-3.5 text-accent" /> Grau de Confiança
               </div>
               <div className="mt-1 font-display text-2xl font-bold text-foreground">
                 {formatProbability(analise.probabilidade)}
@@ -159,7 +150,7 @@ function AnalysisPage() {
             {/* Custo Estimado Mensal */}
             <div className="rounded-2xl border p-4">
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <DollarSign className="size-3.5 text-primary" /> custo_estimado_mensal
+                <DollarSign className="size-3.5 text-primary" /> Custo Estimado Mensal
               </div>
               <div className="mt-1 font-display text-2xl font-bold text-primary">
                 R$ {Number(analise.custo_estimado_mensal || 0).toFixed(2)}

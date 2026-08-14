@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Zap, Loader2, AlertTriangle, ArrowRight, CheckCircle2, History } from "lucide-react";
+import { Zap, Loader2, AlertTriangle, ArrowRight, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -79,8 +79,6 @@ function EntriesPage() {
 
     try {
       await analiseMutation.mutateAsync(validation.data);
-
-      // Invalida o cache do TanStack Query para atualizar o Dashboard e Estatísticas
       await queryClient.invalidateQueries({ queryKey: ["consumos"] });
 
       toast.success("Análise energética realizada e registrada com sucesso!");
@@ -88,14 +86,14 @@ function EntriesPage() {
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         const msg =
-          "Conflito (HTTP 409): Já existe uma análise registrada para este mês de referência. Apenas 1 análise é permitida por mês.";
+          "Já existe uma análise registrada para este mês de referência. Apenas 1 análise é permitida por mês.";
         setConflictError(msg);
         toast.error("Você já possui uma análise cadastrada para este mês!", {
           description: "Confira o seu Dashboard ou escolha outro mês de referência.",
           duration: 6000,
         });
       } else {
-        const errorMsg = err instanceof Error ? err.message : "Erro ao se comunicar com a API.";
+        const errorMsg = err instanceof Error ? err.message : "Erro ao se comunicar com o servidor.";
         toast.error(errorMsg);
       }
     }
@@ -106,7 +104,7 @@ function EntriesPage() {
       <div>
         <h1 className="font-display text-3xl font-bold">Solicitar Análise Energética</h1>
         <p className="text-sm text-muted-foreground">
-          Envie os dados de consumo do imóvel para inferência via inteligência artificial (ONNX).
+          Preencha os dados abaixo para receber um diagnóstico personalizado.
         </p>
       </div>
 
@@ -136,7 +134,7 @@ function EntriesPage() {
       <Card>
         <CardHeader>
           <CardTitle className="font-display text-xl font-semibold flex items-center gap-2">
-            <Zap className="size-5 text-primary" /> Dados da Análise
+            <Zap className="size-5 text-primary" /> Dados do Imóvel e Consumo
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -252,11 +250,7 @@ function EntriesPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="regiao">Região</Label>
-                <Select
-                  value={regiao}
-                  onValueChange={setRegiao}
-                  disabled={analiseMutation.isPending}
-                >
+                <Select value={regiao} onValueChange={setRegiao} disabled={analiseMutation.isPending}>
                   <SelectTrigger id="regiao">
                     <SelectValue placeholder="Selecione a região..." />
                   </SelectTrigger>
@@ -295,7 +289,7 @@ function EntriesPage() {
             >
               {analiseMutation.isPending ? (
                 <>
-                  <Loader2 className="mr-2 size-4 animate-spin" /> Enviando para API Real…
+                  <Loader2 className="mr-2 size-4 animate-spin" /> Processando Análise…
                 </>
               ) : (
                 <>
