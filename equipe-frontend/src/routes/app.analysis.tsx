@@ -1,5 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Sparkles, DollarSign, Target, CheckCircle2, ArrowRight, Zap, AlertCircle } from "lucide-react";
+import {
+  Sparkles,
+  DollarSign,
+  Target,
+  CheckCircle2,
+  ArrowRight,
+  Zap,
+  AlertCircle,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -82,7 +90,8 @@ function AnalysisPage() {
               Nenhum resultado de análise disponível
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Solicite uma análise energética para visualizar o diagnóstico e as recomendações de IA.
+              Solicite uma análise energética para visualizar o diagnóstico e as recomendações de
+              IA.
             </p>
             <Button
               asChild

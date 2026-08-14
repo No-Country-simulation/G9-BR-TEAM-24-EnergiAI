@@ -19,10 +19,10 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
-      { title: "Criar conta — Buzz" },
+      { title: "Criar conta — BeeBuzz" },
       {
         name: "description",
-        content: "Crie sua conta no Buzz e comece a economizar energia hoje.",
+        content: "Crie sua conta no BeeBuzz e comece a economizar energia hoje.",
       },
     ],
   }),
@@ -50,8 +50,10 @@ function SignupPage() {
     setLoading(true);
     try {
       await signup({ name, email, password, level });
-      toast.success("Conta criada! Vamos te conhecer melhor.");
-      navigate({ to: "/onboarding" });
+      toast.success(
+        "Cadastro realizado! Verifique seu e-mail para ativar a conta antes de fazer login.",
+      );
+      navigate({ to: "/login" });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro ao criar conta. Verifique os dados.";
       toast.error(msg);
@@ -72,7 +74,7 @@ function SignupPage() {
             <div className="grid size-10 place-items-center rounded-xl gradient-primary-bg">
               <Zap className="size-5 text-primary-foreground" />
             </div>
-            <span className="font-display text-2xl font-bold">Buzz</span>
+            <span className="font-display text-2xl font-bold">BeeBuzz</span>
           </Link>
           <h1 className="mt-10 font-display text-5xl font-bold tracking-tight">
             Comece <br /> sua economia.
@@ -170,9 +172,7 @@ function SignupPage() {
                   onCheckedChange={(v) => setTerms(!!v)}
                   className="mt-0.5"
                 />
-                <span>
-                  Aceito os termos de uso e política de privacidade.
-                </span>
+                <span>Aceito os termos de uso e política de privacidade.</span>
               </label>
               <Button
                 type="submit"

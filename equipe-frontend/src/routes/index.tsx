@@ -41,7 +41,7 @@ function Splash() {
           transition={{ delay: 0.15 }}
           className="font-display text-5xl font-bold tracking-tight sm:text-7xl"
         >
-          Buzz<span className="text-primary">.</span>
+          BeeBuzz<span className="text-primary">.</span>
         </motion.h1>
         <motion.p
           initial={{ y: 20, opacity: 0 }}
@@ -49,7 +49,8 @@ function Splash() {
           transition={{ delay: 0.25 }}
           className="mt-4 max-w-xl text-lg text-muted-foreground sm:text-xl"
         >
-          Sua jornada gamificada para dominar o consumo de energia. Analise, classifique e economize.
+          Sua jornada gamificada para dominar o consumo de energia. Analise, classifique e
+          economize.
         </motion.p>
 
         <motion.div
@@ -103,9 +104,12 @@ function Splash() {
       {/* Footer com link de Contato */}
       <footer className="relative border-t bg-background/50 py-4 px-6 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground">
-          <div>© {new Date().getFullYear()} Buzz. Todos os direitos reservados.</div>
+          <div>© {new Date().getFullYear()} BeeBuzz. Todos os direitos reservados.</div>
           <div className="flex items-center gap-4">
-            <Link to="/contact" className="flex items-center gap-1 hover:text-foreground transition-colors">
+            <Link
+              to="/contact"
+              className="flex items-center gap-1 hover:text-foreground transition-colors"
+            >
               <Mail className="size-3.5" /> Fale Conosco / Contato
             </Link>
           </div>

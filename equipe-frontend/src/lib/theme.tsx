@@ -46,7 +46,7 @@ export const PRESETS: {
   {
     id: "clean-student",
     label: "Clean Student",
-    description: "Amarelo mel + azul suave. O padrão do Buzz.",
+    description: "Amarelo mel + azul suave. O padrão do BeeBuzz.",
     swatch: ["#FFD24C", "#7CB0FF", "#F8FAFC"],
     vars: {
       "--primary": "oklch(0.82 0.17 82)",

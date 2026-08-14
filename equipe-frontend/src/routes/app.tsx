@@ -1,4 +1,11 @@
-import { createFileRoute, Link, Outlet, redirect, useNavigate, useRouterState } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  redirect,
+  useNavigate,
+  useRouterState,
+} from "@tanstack/react-router";
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -69,7 +76,7 @@ function AppShell() {
           <div className="grid size-9 place-items-center rounded-xl gradient-primary-bg shadow-glow">
             <Zap className="size-5 text-primary-foreground" />
           </div>
-          <span className="font-display text-xl font-bold">Buzz</span>
+          <span className="font-display text-xl font-bold">BeeBuzz</span>
         </div>
 
         <nav className="flex-1 space-y-1 px-3">
@@ -108,7 +115,7 @@ function AppShell() {
               <div className="grid size-8 place-items-center rounded-lg gradient-primary-bg">
                 <Zap className="size-4 text-primary-foreground" />
               </div>
-              <span className="font-display text-lg font-bold">Buzz</span>
+              <span className="font-display text-lg font-bold">BeeBuzz</span>
             </div>
 
             <div className="hidden lg:block text-sm text-muted-foreground">

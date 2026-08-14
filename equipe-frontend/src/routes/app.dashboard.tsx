@@ -43,11 +43,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   useConsumos,
   useDeleteConsumo,
   useUpdateConsumo,
+  analiseRequestSchema,
+  AnaliseRequest,
   AnaliseResponse,
+  REGIOES,
+  Regiao,
 } from "@/lib/data";
 import { toast } from "sonner";
 
@@ -78,10 +90,17 @@ function Dashboard() {
   // Estado para exclusão (Delete)
   const [deleteTargetId, setDeleteTargetId] = useState<string | number | null>(null);
 
-  // Estado para edição (Edit Modal)
+  // Estado para edição (Edit Modal com todos os 8 atributos do modelo + referência)
   const [editingItem, setEditingItem] = useState<AnaliseResponse | null>(null);
   const [editConsumo, setEditConsumo] = useState("");
   const [editMonth, setEditMonth] = useState("");
+  const [editHorasAltoConsumo, setEditHorasAltoConsumo] = useState("3");
+  const [editQtdEquipamentos, setEditQtdEquipamentos] = useState("5");
+  const [editTipoImovel, setEditTipoImovel] = useState("Residencial");
+  const [editQtdArCondicionado, setEditQtdArCondicionado] = useState("1");
+  const [editMoradores, setEditMoradores] = useState("2");
+  const [editRegiao, setEditRegiao] = useState<string>("Sudeste");
+  const [editUsoHorarioPico, setEditUsoHorarioPico] = useState(false);
 
   const lastAnalise = consumos && consumos.length > 0 ? consumos[0] : null;
 
@@ -101,20 +120,53 @@ function Dashboard() {
   const handleOpenEdit = (item: AnaliseResponse) => {
     setEditingItem(item);
     setEditConsumo(String(item.consumo_kwh || ""));
-    setEditMonth(item.reference_month || "");
+    setEditMonth(item.reference_month || new Date().toISOString().slice(0, 7));
+    setEditHorasAltoConsumo(
+      String((item as any).horas_alto_consumo ?? (item as any).horasAltoConsumo ?? 3),
+    );
+    setEditQtdEquipamentos(
+      String((item as any).quantidade_equipamentos ?? (item as any).quantidadeEquipamentos ?? 5),
+    );
+    setEditTipoImovel((item as any).tipo_imovel || (item as any).tipoImovel || "Residencial");
+    setEditQtdArCondicionado(
+      String(
+        (item as any).quantidade_ar_condicionado ?? (item as any).quantidadeArCondicionado ?? 1,
+      ),
+    );
+    setEditMoradores(String((item as any).moradores ?? 2));
+    setEditRegiao((item as any).regiao || "Sudeste");
+    setEditUsoHorarioPico(
+      Boolean((item as any).uso_horario_pico ?? (item as any).usoHorarioPico ?? false),
+    );
   };
 
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem?.id) return;
 
+    const payload: AnaliseRequest = {
+      consumo_kwh: Number(editConsumo),
+      uso_horario_pico: editUsoHorarioPico,
+      quantidade_equipamentos: Number(editQtdEquipamentos),
+      tipo_imovel: editTipoImovel || "Residencial",
+      horas_alto_consumo: Number(editHorasAltoConsumo),
+      quantidade_ar_condicionado: Number(editQtdArCondicionado),
+      moradores: Number(editMoradores),
+      regiao: editRegiao as Regiao,
+      reference_month: editMonth || new Date().toISOString().slice(0, 7),
+    };
+
+    const validation = analiseRequestSchema.safeParse(payload);
+    if (!validation.success) {
+      const firstError = validation.error.errors[0]?.message || "Verifique os dados informados.";
+      toast.error(firstError);
+      return;
+    }
+
     try {
       await updateMutation.mutateAsync({
         id: editingItem.id,
-        payload: {
-          consumo_kwh: Number(editConsumo),
-          reference_month: editMonth,
-        },
+        payload: validation.data,
       });
       toast.success("Análise de consumo atualizada com sucesso!");
       setEditingItem(null);
@@ -247,7 +299,11 @@ function Dashboard() {
                     <div>
                       <div className="font-semibold text-foreground flex items-center gap-2">
                         <span>Mês: {item.reference_month || "N/A"}</span>
-                        {idx === 0 && <Badge variant="secondary" className="text-[10px]">Atual</Badge>}
+                        {idx === 0 && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            Atual
+                          </Badge>
+                        )}
                       </div>
                       <div className="text-xs text-muted-foreground mt-0.5">
                         Consumo: {item.consumo_kwh ? `${item.consumo_kwh} kWh` : "Registrado"}
@@ -256,7 +312,9 @@ function Dashboard() {
 
                     <div className="flex items-center gap-3">
                       <Badge variant="outline" className="hidden sm:inline-flex">
-                        {item.categoria && item.categoria !== "N/A" ? item.categoria : "Residencial"}
+                        {item.categoria && item.categoria !== "N/A"
+                          ? item.categoria
+                          : "Residencial"}
                       </Badge>
 
                       <div className="font-bold text-primary">
@@ -274,7 +332,8 @@ function Dashboard() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => handleOpenEdit(item)}>
-                              <Pencil className="mr-2 size-4 text-muted-foreground" /> Editar Análise
+                              <Pencil className="mr-2 size-4 text-muted-foreground" /> Editar
+                              Análise
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => setDeleteTargetId(item.id!)}
@@ -301,11 +360,10 @@ function Dashboard() {
             <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary">
               <Zap className="size-6" />
             </div>
-            <div className="font-display text-lg font-semibold">
-              Nenhuma análise cadastrada
-            </div>
+            <div className="font-display text-lg font-semibold">Nenhuma análise cadastrada</div>
             <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              Sua conta ainda não possui análises registradas no servidor real. Preencha o formulário para enviar os dados de consumo.
+              Sua conta ainda não possui análises registradas no servidor real. Preencha o
+              formulário para enviar os dados de consumo.
             </p>
             <div className="pt-2">
               <Button asChild className="gradient-primary-bg text-primary-foreground shadow-glow">
@@ -322,9 +380,12 @@ function Dashboard() {
       <AlertDialog open={!!deleteTargetId} onOpenChange={(v) => !v && setDeleteTargetId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-display">Excluir Análise de Consumo?</AlertDialogTitle>
+            <AlertDialogTitle className="font-display">
+              Excluir Análise de Consumo?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação enviará uma requisição DELETE /consumos/{deleteTargetId} para o servidor real. Esta operação não pode ser desfeita.
+              Esta ação enviará uma requisição DELETE /consumos/{deleteTargetId} para o servidor
+              real. Esta operação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -345,39 +406,159 @@ function Dashboard() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Modal de Edição (PUT) */}
+      {/* Modal de Edição Completo (PUT com os 8 atributos obrigatórios) */}
       <Dialog open={!!editingItem} onOpenChange={(v) => !v && setEditingItem(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display flex items-center gap-2">
               <Pencil className="size-5 text-primary" /> Editar Análise de Consumo
             </DialogTitle>
             <DialogDescription>
-              Atualize os valores do registro para re-processamento no backend (PUT /consumos/{editingItem?.id}).
+              Atualize os parâmetros completos para re-processamento pelo modelo de IA (PUT
+              /consumos/{editingItem?.id}).
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSaveEdit} className="space-y-4 pt-2">
-            <div className="space-y-2">
-              <Label htmlFor="edit-consumo">Consumo (kWh)</Label>
-              <Input
-                id="edit-consumo"
-                type="number"
-                step="any"
-                value={editConsumo}
-                onChange={(e) => setEditConsumo(e.target.value)}
-                required
-                disabled={updateMutation.isPending}
-              />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="edit-consumo">Consumo (kWh)</Label>
+                <Input
+                  id="edit-consumo"
+                  type="number"
+                  step="any"
+                  value={editConsumo}
+                  onChange={(e) => setEditConsumo(e.target.value)}
+                  placeholder="Ex: 230"
+                  required
+                  disabled={updateMutation.isPending}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-month">Mês de Referência</Label>
+                <Input
+                  id="edit-month"
+                  type="month"
+                  value={editMonth}
+                  onChange={(e) => setEditMonth(e.target.value)}
+                  required
+                  disabled={updateMutation.isPending}
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-month">Mês de Referência (YYYY-MM)</Label>
-              <Input
-                id="edit-month"
-                type="month"
-                value={editMonth}
-                onChange={(e) => setEditMonth(e.target.value)}
-                required
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="edit-horas-alto-consumo">Horas de Alto Consumo/dia</Label>
+                <Input
+                  id="edit-horas-alto-consumo"
+                  type="number"
+                  value={editHorasAltoConsumo}
+                  onChange={(e) => setEditHorasAltoConsumo(e.target.value)}
+                  placeholder="Ex: 3"
+                  min={0}
+                  max={24}
+                  required
+                  disabled={updateMutation.isPending}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-qtd-equipamentos">Qtd. Equipamentos</Label>
+                <Input
+                  id="edit-qtd-equipamentos"
+                  type="number"
+                  value={editQtdEquipamentos}
+                  onChange={(e) => setEditQtdEquipamentos(e.target.value)}
+                  placeholder="Ex: 5"
+                  min={1}
+                  required
+                  disabled={updateMutation.isPending}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="edit-tipo-imovel">Tipo de Imóvel</Label>
+                <Select
+                  value={editTipoImovel}
+                  onValueChange={setEditTipoImovel}
+                  disabled={updateMutation.isPending}
+                >
+                  <SelectTrigger id="edit-tipo-imovel">
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Residencial">Residencial</SelectItem>
+                    <SelectItem value="Comercial">Comercial</SelectItem>
+                    <SelectItem value="Industrial">Industrial</SelectItem>
+                    <SelectItem value="Outro">Outro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-qtd-ar">Qtd. Ar-Condicionado</Label>
+                <Input
+                  id="edit-qtd-ar"
+                  type="number"
+                  value={editQtdArCondicionado}
+                  onChange={(e) => setEditQtdArCondicionado(e.target.value)}
+                  placeholder="Ex: 1"
+                  min={0}
+                  required
+                  disabled={updateMutation.isPending}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="edit-moradores">Moradores</Label>
+                <Input
+                  id="edit-moradores"
+                  type="number"
+                  value={editMoradores}
+                  onChange={(e) => setEditMoradores(e.target.value)}
+                  placeholder="Ex: 2"
+                  min={1}
+                  required
+                  disabled={updateMutation.isPending}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-regiao">Região</Label>
+                <Select
+                  value={editRegiao}
+                  onValueChange={setEditRegiao}
+                  disabled={updateMutation.isPending}
+                >
+                  <SelectTrigger id="edit-regiao">
+                    <SelectValue placeholder="Selecione a região..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {REGIOES.map((item) => (
+                      <SelectItem key={item} value={item}>
+                        {item}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-xl border p-4">
+              <div className="space-y-0.5">
+                <Label htmlFor="edit-uso-horario-pico" className="text-sm font-medium">
+                  Uso em Horário de Pico
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Indica se há alto uso de equipamentos no horário de pico
+                </p>
+              </div>
+              <Switch
+                id="edit-uso-horario-pico"
+                checked={editUsoHorarioPico}
+                onCheckedChange={setEditUsoHorarioPico}
                 disabled={updateMutation.isPending}
               />
             </div>

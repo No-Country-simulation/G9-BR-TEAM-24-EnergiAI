@@ -50,7 +50,7 @@ function EntriesPage() {
   const [regiao, setRegiao] = useState<string>("Sudeste");
   const [usoHorarioPico, setUsoHorarioPico] = useState(false);
   const [referenceMonth, setReferenceMonth] = useState(getCurrentMonthString());
-  
+
   // Estado local para conflito 409
   const [conflictError, setConflictError] = useState<string | null>(null);
 
@@ -79,7 +79,7 @@ function EntriesPage() {
 
     try {
       await analiseMutation.mutateAsync(validation.data);
-      
+
       // Invalida o cache do TanStack Query para atualizar o Dashboard e Estatísticas
       await queryClient.invalidateQueries({ queryKey: ["consumos"] });
 
@@ -87,7 +87,8 @@ function EntriesPage() {
       navigate({ to: "/app/analysis" });
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        const msg = "Conflito (HTTP 409): Já existe uma análise registrada para este mês de referência. Apenas 1 análise é permitida por mês.";
+        const msg =
+          "Conflito (HTTP 409): Já existe uma análise registrada para este mês de referência. Apenas 1 análise é permitida por mês.";
         setConflictError(msg);
         toast.error("Você já possui uma análise cadastrada para este mês!", {
           description: "Confira o seu Dashboard ou escolha outro mês de referência.",
@@ -125,11 +126,7 @@ function EntriesPage() {
                 <History className="mr-1.5 size-4" /> Ver Consumos no Dashboard
               </Link>
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setConflictError(null)}
-            >
+            <Button size="sm" variant="outline" onClick={() => setConflictError(null)}>
               Tentar outro mês
             </Button>
           </CardContent>
@@ -255,7 +252,11 @@ function EntriesPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="regiao">Região</Label>
-                <Select value={regiao} onValueChange={setRegiao} disabled={analiseMutation.isPending}>
+                <Select
+                  value={regiao}
+                  onValueChange={setRegiao}
+                  disabled={analiseMutation.isPending}
+                >
                   <SelectTrigger id="regiao">
                     <SelectValue placeholder="Selecione a região..." />
                   </SelectTrigger>

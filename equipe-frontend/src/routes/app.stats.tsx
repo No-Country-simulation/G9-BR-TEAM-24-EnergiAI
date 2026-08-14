@@ -39,7 +39,8 @@ function StatsPage() {
       <div>
         <h1 className="font-display text-3xl font-bold">Estatísticas e Séries Temporais</h1>
         <p className="text-sm text-muted-foreground">
-          Evolução histórica de consumo (kWh) e estimativas mensais (R$) retornadas da API Real (GET /consumos).
+          Evolução histórica de consumo (kWh) e estimativas mensais (R$) retornadas da API Real (GET
+          /consumos).
         </p>
       </div>
 
@@ -97,10 +98,19 @@ function StatsPage() {
                     <YAxis tick={{ fontSize: 12 }} unit=" kWh" />
                     <Tooltip
                       formatter={(value: any) => [`${value} kWh`, "Consumo"]}
-                      contentStyle={{ backgroundColor: "var(--background)", borderColor: "var(--border)", borderRadius: "12px" }}
+                      contentStyle={{
+                        backgroundColor: "var(--background)",
+                        borderColor: "var(--border)",
+                        borderRadius: "12px",
+                      }}
                     />
                     <Legend />
-                    <Bar dataKey="consumo" name="Consumo (kWh)" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                    <Bar
+                      dataKey="consumo"
+                      name="Consumo (kWh)"
+                      fill="hsl(var(--primary))"
+                      radius={[6, 6, 0, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -113,9 +123,7 @@ function StatsPage() {
               <CardTitle className="font-display text-lg font-semibold flex items-center gap-2">
                 <TrendingUp className="size-5 text-accent" /> Custo Estimado Mensal (R$)
               </CardTitle>
-              <CardDescription>
-                Projeção financeira baseada na análise ONNX.
-              </CardDescription>
+              <CardDescription>Projeção financeira baseada na análise ONNX.</CardDescription>
             </CardHeader>
             <CardContent className="pt-2">
               <div className="h-72 w-full">
@@ -125,8 +133,15 @@ function StatsPage() {
                     <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} unit=" R$" />
                     <Tooltip
-                      formatter={(value: any) => [`R$ ${Number(value).toFixed(2)}`, "Custo Estimado"]}
-                      contentStyle={{ backgroundColor: "var(--background)", borderColor: "var(--border)", borderRadius: "12px" }}
+                      formatter={(value: any) => [
+                        `R$ ${Number(value).toFixed(2)}`,
+                        "Custo Estimado",
+                      ]}
+                      contentStyle={{
+                        backgroundColor: "var(--background)",
+                        borderColor: "var(--border)",
+                        borderRadius: "12px",
+                      }}
                     />
                     <Legend />
                     <Line
@@ -156,7 +171,8 @@ function StatsPage() {
               Sem dados suficientes para gráficos
             </div>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              Realize a primeira análise mensal para gerar o histórico e liberar as séries temporais.
+              Realize a primeira análise mensal para gerar o histórico e liberar as séries
+              temporais.
             </p>
             <div className="pt-2">
               <Button asChild className="gradient-primary-bg text-primary-foreground shadow-glow">

@@ -21,8 +21,8 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Entrar — Buzz" },
-      { name: "description", content: "Acesse sua jornada de eficiência energética no Buzz." },
+      { title: "Entrar — BeeBuzz" },
+      { name: "description", content: "Acesse sua jornada de eficiência energética no BeeBuzz." },
     ],
   }),
   component: LoginPage,
@@ -52,10 +52,11 @@ function LoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      toast.success("Bem-vindo de volta ao Buzz!");
+      toast.success("Bem-vindo de volta ao BeeBuzz!");
       navigate({ to: "/app/dashboard" });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Falha na autenticação. Verifique e-mail e senha.";
+      const msg =
+        err instanceof Error ? err.message : "Falha na autenticação. Verifique e-mail e senha.";
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -91,7 +92,7 @@ function LoginPage() {
             <div className="grid size-10 place-items-center rounded-xl gradient-primary-bg">
               <Zap className="size-5 text-primary-foreground" />
             </div>
-            <span className="font-display text-2xl font-bold">Buzz</span>
+            <span className="font-display text-2xl font-bold">BeeBuzz</span>
           </Link>
           <h1 className="mt-10 font-display text-5xl font-bold tracking-tight">
             Bem-vindo <br /> de volta.
@@ -111,7 +112,7 @@ function LoginPage() {
               <div className="grid size-9 place-items-center rounded-xl gradient-primary-bg">
                 <Zap className="size-4 text-primary-foreground" />
               </div>
-              <span className="font-display text-xl font-bold">Buzz</span>
+              <span className="font-display text-xl font-bold">BeeBuzz</span>
             </div>
             <h2 className="font-display text-2xl font-bold">Entrar</h2>
             <p className="mt-1 text-sm text-muted-foreground">Acesse sua conta com seu e-mail.</p>
@@ -132,14 +133,17 @@ function LoginPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Senha</Label>
-                  
+
                   {/* Modal de Recuperação de Senha */}
                   <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
                     <DialogTrigger asChild>
                       <button
                         type="button"
                         className="text-xs text-primary hover:underline"
-                        onClick={() => { setForgotEmail(email); setForgotSuccess(false); }}
+                        onClick={() => {
+                          setForgotEmail(email);
+                          setForgotSuccess(false);
+                        }}
                       >
                         Esqueci a senha
                       </button>
@@ -150,7 +154,8 @@ function LoginPage() {
                           <KeyRound className="size-5 text-primary" /> Recuperar Senha
                         </DialogTitle>
                         <DialogDescription>
-                          Informe seu e-mail cadastrado para receber as instruções de redefinição de senha (POST /auth/forgot-password).
+                          Informe seu e-mail cadastrado para receber as instruções de redefinição de
+                          senha (POST /auth/forgot-password).
                         </DialogDescription>
                       </DialogHeader>
 
@@ -159,7 +164,9 @@ function LoginPage() {
                           <div className="mx-auto grid size-12 place-items-center rounded-full bg-success/15 text-success">
                             <CheckCircle2 className="size-6" />
                           </div>
-                          <div className="text-sm font-semibold">E-mail de recuperação enviado!</div>
+                          <div className="text-sm font-semibold">
+                            E-mail de recuperação enviado!
+                          </div>
                           <p className="text-xs text-muted-foreground">
                             Verifique sua caixa de entrada e spam.
                           </p>
@@ -209,7 +216,8 @@ function LoginPage() {
                 />
               </div>
               <label className="flex items-center gap-2 text-sm">
-                <Checkbox checked={remember} onCheckedChange={(v) => setRemember(!!v)} /> Lembrar de mim
+                <Checkbox checked={remember} onCheckedChange={(v) => setRemember(!!v)} /> Lembrar de
+                mim
               </label>
               <Button
                 type="submit"

@@ -25,7 +25,7 @@ function Onboarding() {
 
   const steps = [
     {
-      title: "Olá! Somos o Buzz 🐝",
+      title: "Olá! Somos o BeeBuzz 🐝",
       subtitle: "Vamos configurar em 3 passos rápidos.",
       body: (
         <div className="flex flex-col items-center gap-6">
