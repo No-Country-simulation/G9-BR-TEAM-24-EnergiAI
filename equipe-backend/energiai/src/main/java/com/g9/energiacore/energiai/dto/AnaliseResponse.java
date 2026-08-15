@@ -1,7 +1,8 @@
 package com.g9.energiacore.energiai.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 public record AnaliseResponse(
@@ -9,7 +10,8 @@ public record AnaliseResponse(
         Long id,
 
         @JsonProperty("reference_month")
-        LocalDate referenceMonth,
+        @JsonFormat(pattern = "yyyy-MM")
+        YearMonth referenceMonth,
 
         @JsonProperty("categoria")
         String categoria,

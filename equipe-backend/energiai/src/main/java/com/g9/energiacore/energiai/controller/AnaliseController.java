@@ -86,13 +86,7 @@ public class AnaliseController {
             )
             @Valid @RequestBody AnaliseRequest req) {
         log.info("Análise energética solicitada com novos atributos ONNX: {}", req);
-        User currentUser = null;
-        try {
-            currentUser = securityUtils.getAuthenticatedUser();
-        } catch (Exception e) {
-            log.info("Requisição de análise recebida em modo não-autenticado: {}", e.getMessage());
-        }
-
+        User currentUser = securityUtils.getAuthenticatedUser();
         AnaliseResponse resp = analiseService.analisar(req, currentUser);
         return ResponseEntity.status(201).body(resp);
     }

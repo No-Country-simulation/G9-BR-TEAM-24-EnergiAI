@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,7 +82,8 @@ public class AnaliseService {
             consumoId = consumo.getId();
         }
 
-        return new AnaliseResponse(consumoId, refMonth, categoria, probabilidade, recomendacoes, custoEstimadoMensal);
+        YearMonth responseMonth = refMonth != null ? YearMonth.from(refMonth) : null;
+        return new AnaliseResponse(consumoId, responseMonth, categoria, probabilidade, recomendacoes, custoEstimadoMensal);
     }
 
     public List<String> gerarRecomendacoes(AnaliseRequest request) {
