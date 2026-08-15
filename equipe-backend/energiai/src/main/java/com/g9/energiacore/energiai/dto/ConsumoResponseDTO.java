@@ -1,16 +1,17 @@
 package com.g9.energiacore.energiai.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.g9.energiacore.energiai.domain.Consumo;
 
-import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.OffsetDateTime;
 import java.util.List;
 
 public record ConsumoResponseDTO(
         @JsonProperty("id") Long id,
         @JsonProperty("usuario_id") Long usuarioId,
-        @JsonProperty("reference_month") LocalDate referenceMonth,
+        @JsonProperty("reference_month") @JsonFormat(pattern = "yyyy-MM") YearMonth referenceMonth,
         @JsonProperty("consumo_kwh") Double consumoKwh,
         @JsonProperty("uso_horario_pico") Boolean usoHorarioPico,
         @JsonProperty("quantidade_equipamentos") Integer quantidadeEquipamentos,
@@ -29,7 +30,7 @@ public record ConsumoResponseDTO(
         return new ConsumoResponseDTO(
                 consumo.getId(),
                 consumo.getUsuarioId(),
-                consumo.getReferenceMonth(),
+                consumo.getReferenceMonth() != null ? YearMonth.from(consumo.getReferenceMonth()) : null,
                 consumo.getConsumoKwh(),
                 consumo.getUsoHorarioPico(),
                 consumo.getQuantidadeEquipamentos(),
