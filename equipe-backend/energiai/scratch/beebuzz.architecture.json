@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "BeeBuzz / EnergiAI - Arquitetura de Solução",
+    "output": "beebuzz_arquitetura.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "edge-to-app",
+        "label": "Fluxo de Requisição e Borda",
+        "focus": ["browser", "vercel", "cloudflare", "nginx", "docker", "spring_boot"],
+        "note": "Tráfego HTTP/HTTPS saindo do navegador do cliente e passando por Vercel, Cloudflare e Nginx até o container Spring Boot na OCI VM."
+      },
+      {
+        "id": "data-persistence",
+        "label": "Persistência e Serviços Nuvem",
+        "focus": ["spring_boot", "neon", "oci_storage", "resend"],
+        "note": "Dependências do backend: banco Postgres Neon via JDBC, download do modelo ONNX via link PAR e gateway de e-mails transacionais via Resend."
+      }
+    ]
+  },
+  "components": [
+    { "id": "browser", "type": "external", "label": "Usuário / Browser", "sublabel": "Navegador Web", "pos": [50, 280], "size": [120, 60] },
+    { "id": "vercel", "type": "frontend", "label": "Frontend (Vercel)", "sublabel": "React SPA / Vite", "pos": [250, 160], "size": [130, 60] },
+    { "id": "cloudflare", "type": "cloud", "label": "Cloudflare Proxy", "sublabel": "DNS, DDoS & SSL", "pos": [250, 400], "size": [130, 60] },
+    { "id": "nginx", "type": "security", "label": "Nginx Proxy", "sublabel": "SSL / Port :443", "pos": [470, 400], "size": [130, 60] },
+    { "id": "docker", "type": "cloud", "label": "Docker Container", "sublabel": "Temurin JRE 21", "pos": [680, 400], "size": [130, 60] },
+    { "id": "spring_boot", "type": "backend", "label": "Spring Boot API", "sublabel": "Java 21 / Tomcat", "pos": [890, 400], "size": [130, 60] },
+    { "id": "oci_storage", "type": "cloud", "label": "OCI Object Storage", "sublabel": "Model Bucket (PAR)", "pos": [890, 160], "size": [130, 60] },
+    { "id": "neon", "type": "database", "label": "Neon PostgreSQL", "sublabel": "Serverless DB", "pos": [1110, 400], "size": [130, 60] },
+    { "id": "resend", "type": "external", "label": "Resend API", "sublabel": "Email Gateway", "pos": [1110, 160], "size": [130, 60] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Camada de Borda & Cliente (Edge / Vercel)", "wraps": ["vercel", "cloudflare"] },
+    { "kind": "region", "label": "OCI Compute Instance (Ubuntu VM)", "wraps": ["nginx", "docker", "spring_boot"] },
+    { "kind": "security-group", "label": "Isolamento do Docker (spring:spring)", "wraps": ["spring_boot"], "pad": 16 },
+    { "kind": "region", "label": "Serviços Cloud Externos", "wraps": ["neon", "oci_storage", "resend"] }
+  ],
+  "connections": [
+    { "id": "browser-load", "from": "browser", "to": "vercel", "label": "HTTPS :443", "variant": "emphasis", "fromSide": "top", "toSide": "left" },
+    { "id": "api-call", "from": "browser", "to": "cloudflare", "label": "HTTPS/TLS", "variant": "emphasis", "fromSide": "bottom", "toSide": "left" },
+    { "id": "cloudflare-to-nginx", "from": "cloudflare", "to": "nginx", "label": "SSL Strict", "variant": "security", "fromSide": "right", "toSide": "left" },
+    { "id": "nginx-proxy", "from": "nginx", "to": "docker", "label": "HTTP :8080", "fromSide": "right", "toSide": "left" },
+    { "id": "docker-run", "from": "docker", "to": "spring_boot", "fromSide": "right", "toSide": "left" },
+    { "id": "spring-db", "from": "spring_boot", "to": "neon", "label": "JDBC SSL", "variant": "emphasis", "fromSide": "right", "toSide": "left" },
+    { "id": "spring-model", "from": "spring_boot", "to": "oci_storage", "label": "HTTP (PAR)", "variant": "dashed", "labelDy": -30 },
+    { "id": "spring-email", "from": "spring_boot", "to": "resend", "label": "REST JSON", "variant": "dashed", "fromSide": "top", "toSide": "left" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Borda & Interface", "items": ["React 19 SPA hospedada na Vercel com carregamento rápido", "Segurança global, DNS e terminação TLS gerenciados pelo Cloudflare"] },
+    { "dot": "emerald", "title": "Hospedagem OCI VM", "items": ["Nginx atua como proxy reverso escalável", "Container Docker roda com usuário restrito sem privilégios root", "ONNX Runtime carrega o modelo nativamente na JVM com latência <10ms"] },
+    { "dot": "rose", "title": "Persistência & Serviços Nuvem", "items": ["NeonDB provê banco Serverless escalável e resiliente", "OCI Object Storage entrega modelo ONNX sob demanda via Link PAR", "Resend API realiza envios assíncronos de confirmação de cadastro"] }
+  ]
+}
