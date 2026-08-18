@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "BeeBuzz — Authentication & Security Flow",
+    "output": "auth-flow.html",
+    "viewBox": [1140, 780],
+    "column_fit": "spread",
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "registration-and-email",
+        "label": "User Registration and Email Verification",
+        "focus": ["user", "web", "auth_svc", "bcrypt", "db", "resend"],
+        "note": "Registration hashes passwords with BCrypt, stores pending user & confirmation token in Neon DB, and sends email via Resend."
+      },
+      {
+        "id": "login-and-jwt",
+        "label": "Login Authentication and Token Issuance",
+        "focus": ["user", "web", "auth_svc", "db", "sec"],
+        "note": "Login authenticates credentials against BCrypt hash and issues a signed JWT token stored in browser localStorage."
+      },
+      {
+        "id": "bearer-authorization",
+        "label": "Bearer Token Verification",
+        "focus": ["user", "web", "sec", "db"],
+        "note": "JwtAuthenticationFilter validates Authorization Bearer header, authorizing requests to protected endpoints."
+      }
+    ]
+  },
+  "participants": [
+    { "id": "user", "type": "external", "label": "Usuário", "sublabel": "Browser" },
+    { "id": "web", "type": "frontend", "label": "Vercel UI", "sublabel": "React 19" },
+    { "id": "sec", "type": "security", "label": "Spring Sec", "sublabel": "JWT Filter" },
+    { "id": "auth_svc", "type": "backend", "label": "AuthService", "sublabel": "Auth Controller" },
+    { "id": "bcrypt", "type": "security", "label": "BCrypt", "sublabel": "Encoder" },
+    { "id": "db", "type": "database", "label": "Neon DB", "sublabel": "PostgreSQL" },
+    { "id": "resend", "type": "external", "label": "Resend API", "sublabel": "Email Gateway" }
+  ],
+  "segments": [
+    { "from": 140, "to": 355, "label": "1. Cadastro & Confirmação por E-mail" },
+    { "from": 365, "to": 520, "label": "2. Autenticação & Emissão de JWT" },
+    { "from": 530, "to": 700, "label": "3. Acesso Autenticado a Endpoints Protegidos" }
+  ],
+  "messages": [
+    { "id": "req-register", "from": "user", "to": "web", "y": 160, "label": "Submeter formulário de cadastro", "variant": "default" },
+    { "id": "post-register", "from": "web", "to": "auth_svc", "y": 190, "label": "POST /auth/register", "variant": "emphasis" },
+    { "id": "hash-pwd", "from": "auth_svc", "to": "bcrypt", "y": 218, "label": "encode(rawPassword)", "variant": "security" },
+    { "id": "hash-res", "from": "bcrypt", "to": "auth_svc", "y": 252, "label": "$2a$10$... (hash)", "variant": "return" },
+    { "id": "save-user", "from": "auth_svc", "to": "db", "y": 285, "label": "INSERT INTO users & tokens", "variant": "emphasis" },
+    { "id": "send-email", "from": "auth_svc", "to": "resend", "y": 315, "label": "Disparar e-mail de ativação", "variant": "dashed" },
+    { "id": "verify-token", "from": "web", "to": "auth_svc", "y": 342, "label": "POST /auth/verify-email (token)", "variant": "emphasis" },
+    { "id": "post-login", "from": "user", "to": "web", "y": 380, "label": "Informar Email + Senha", "variant": "default" },
+    { "id": "login-api", "from": "web", "to": "auth_svc", "y": 410, "label": "POST /auth/login", "variant": "emphasis" },
+    { "id": "verify-pwd", "from": "auth_svc", "to": "bcrypt", "y": 442, "label": "matches(password, hash)", "variant": "security" },
+    { "id": "issue-jwt", "from": "auth_svc", "to": "web", "y": 475, "label": "200 OK (Token JWT + User DTO)", "variant": "return" },
+    { "id": "store-token", "from": "web", "to": "user", "y": 505, "label": "Salvar buzz.token em localStorage", "variant": "return" },
+    { "id": "req-protected", "from": "user", "to": "web", "y": 550, "label": "Acessar Dashboard / Análise", "variant": "default" },
+    { "id": "auth-header", "from": "web", "to": "sec", "y": 580, "label": "Authorization: Bearer <JWT>", "variant": "security" },
+    { "id": "filter-jwt", "from": "sec", "to": "db", "y": 615, "label": "extractEmail() & findByEmail()", "variant": "emphasis" },
+    { "id": "user-context", "from": "db", "to": "sec", "y": 645, "label": "SecurityContextHolder (ROLE_USER)", "variant": "return" },
+    { "id": "allow-endpoint", "from": "sec", "to": "web", "y": 675, "label": "200 / 201 (Acesso Autorizado)", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "web", "from": 160, "to": 680, "type": "frontend" },
+    { "participant": "auth_svc", "from": 190, "to": 480, "type": "backend" },
+    { "participant": "bcrypt", "from": 218, "to": 255, "type": "security" },
+    { "participant": "db", "from": 285, "to": 648, "type": "database" },
+    { "participant": "resend", "from": 315, "to": 345, "type": "external" },
+    { "participant": "sec", "from": 580, "to": 678, "type": "security" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Cadastro & Confirmação", "items": ["Senhas são salvas com hash BCrypt na tabela 'users' do Neon DB", "Token de ativação expira em 24h na tabela 'user_confirmation_tokens'", "Resend API envia o e-mail de verificação com o link de confirmação"] },
+    { "dot": "emerald", "title": "Autenticação & Emissão de Token", "items": ["POST /auth/login valida a senha usando BCrypt.matches()", "Geração do JWT assinado via HMAC-SHA256 contendo o e-mail do usuário", "Token é armazenado no cliente via localStorage ('buzz.token')"] },
+    { "dot": "rose", "title": "Segurança & Controle de Acesso", "items": ["JwtAuthenticationFilter intercepta todas as chamadas e valida o Bearer token", "Endpoints públicos (/auth/**, /contact-us, /actuator) liberados sem token", "Endpoints protegidos (/analise-energetica, /consumos/**, /users/me) exigem token válido"] }
+  ]
+}

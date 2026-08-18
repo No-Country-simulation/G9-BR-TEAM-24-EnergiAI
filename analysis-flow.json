@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "BeeBuzz — Energy Analysis Flow",
+    "output": "analysis-flow.html",
+    "viewBox": [1140, 780],
+    "column_fit": "spread",
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "ingress-and-auth",
+        "label": "Ingress and Security Layer",
+        "focus": ["user", "web", "edge", "sec"],
+        "note": "User submits analysis form; request traverses Edge proxy and Spring Security JWT validation."
+      },
+      {
+        "id": "controller-and-inference",
+        "label": "Controller and ONNX Inference",
+        "focus": ["sec", "controller", "service", "onnx", "model"],
+        "note": "AnaliseController delegates to AnaliseService, which executes ONNX Runtime JNI tensors against model."
+      },
+      {
+        "id": "persistence-and-response",
+        "label": "Persistence and API Response",
+        "focus": ["service", "db", "controller", "web", "user"],
+        "note": "Business logic calculates efficiency category & cost, persists to Neon PostgreSQL, and returns 201 Created."
+      }
+    ]
+  },
+  "participants": [
+    { "id": "user", "type": "external", "label": "Usuário", "sublabel": "Browser" },
+    { "id": "web", "type": "frontend", "label": "Vercel UI", "sublabel": "React 19" },
+    { "id": "edge", "type": "cloud", "label": "Edge Proxy", "sublabel": "Cloudflare/Nginx" },
+    { "id": "sec", "type": "security", "label": "Spring Sec", "sublabel": "JWT Filter" },
+    { "id": "controller", "type": "backend", "label": "AnaliseCtrl", "sublabel": "POST /analise" },
+    { "id": "service", "type": "backend", "label": "AnaliseSvc", "sublabel": "Regras" },
+    { "id": "onnx", "type": "backend", "label": "ONNX Engine", "sublabel": "LocalInference" },
+    { "id": "model", "type": "cloud", "label": "Modelo ONNX", "sublabel": "modelo_energia" },
+    { "id": "db", "type": "database", "label": "Neon DB", "sublabel": "PostgreSQL" }
+  ],
+  "segments": [
+    { "from": 140, "to": 310, "label": "Ingresso & Autenticação" },
+    { "from": 330, "to": 540, "label": "Inferência IA & Regras" },
+    { "from": 560, "to": 700, "label": "Persistência & Resposta" }
+  ],
+  "messages": [
+    { "id": "submit-form", "from": "user", "to": "web", "y": 160, "label": "Submeter dados de consumo", "variant": "default" },
+    { "id": "post-analysis", "from": "web", "to": "edge", "y": 200, "label": "POST /analise-energetica", "variant": "emphasis" },
+    { "id": "forward-nginx", "from": "edge", "to": "sec", "y": 240, "label": "HTTP :8080 (Proxy Pass)", "variant": "default" },
+    { "id": "jwt-validate", "from": "sec", "to": "controller", "y": 280, "label": "Bearer JWT Validado", "variant": "security" },
+    { "id": "execute-analise", "from": "controller", "to": "service", "y": 340, "label": "analisar(req, currentUser)", "variant": "emphasis" },
+    { "id": "run-inference", "from": "service", "to": "onnx", "y": 380, "label": "executarInferenciador(req)", "variant": "emphasis" },
+    { "id": "onnx-tensors", "from": "onnx", "to": "model", "y": 420, "label": "Tensores [1,1] Session.run()", "variant": "default" },
+    { "id": "onnx-result", "from": "model", "to": "onnx", "y": 460, "label": "consumoPreditoOnnx (kWh)", "variant": "return" },
+    { "id": "infer-dto", "from": "onnx", "to": "service", "y": 500, "label": "InferenceResult (Cat, Prob)", "variant": "return" },
+    { "id": "save-consumo", "from": "service", "to": "db", "y": 570, "label": "INSERT INTO consumos", "variant": "emphasis" },
+    { "id": "db-confirm", "from": "db", "to": "service", "y": 605, "label": "Entidade Consumo salva (ID)", "variant": "return" },
+    { "id": "service-resp", "from": "service", "to": "controller", "y": 635, "label": "AnaliseResponse DTO", "variant": "return" },
+    { "id": "http-201", "from": "controller", "to": "web", "y": 660, "label": "201 Created (JSON)", "variant": "return" },
+    { "id": "render-ui", "from": "web", "to": "user", "y": 685, "label": "Exibir Diagnóstico & Dicas", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "web", "from": 195, "to": 688, "type": "frontend" },
+    { "participant": "edge", "from": 200, "to": 665, "type": "cloud" },
+    { "participant": "sec", "from": 240, "to": 285, "type": "security" },
+    { "participant": "controller", "from": 280, "to": 662, "type": "backend" },
+    { "participant": "service", "from": 340, "to": 638, "type": "backend" },
+    { "participant": "onnx", "from": 380, "to": 502, "type": "backend" },
+    { "participant": "db", "from": 570, "to": 608, "type": "database" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Borda & Segurança", "items": ["Requisição HTTP POST contendo token JWT no header Authorization", "Cloudflare e Nginx aplicam SSL strict e repassam para a porta 8080", "Spring Security valida o token e injeta o usuário autenticado no contexto"] },
+    { "dot": "emerald", "title": "Motor de IA ONNX", "items": ["AnaliseService aciona LocalOnnxInferenceService com tensores de entrada [1,1]", "Modelo de regressão calcula o consumo em kWh predito em <10ms", "Regra de negócio compara consumo real vs predito e define perfil (Eficiente/Moderado/Ineficiente)"] },
+    { "dot": "rose", "title": "Persistência & Diagnóstico", "items": ["Resultado da análise é persistido na tabela 'consumos' associado ao ID do usuário", "Custo mensal estimado é calculado com a tarifa base de R$ 0.75 / kWh", "Retorno 201 Created entrega o DTO AnaliseResponse com recomendações personalizadas"] }
+  ]
+}

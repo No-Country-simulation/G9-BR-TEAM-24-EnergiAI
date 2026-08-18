@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BeeBuzz / EnergiAI — Portal de Arquitetura</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --card-bg: #111827;
+      --border: #1f293d;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary: #f59e0b;
+      --primary-hover: #d97706;
+      --accent: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    header {
+      background: rgba(17, 24, 39, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #000;
+      font-weight: 800;
+      font-size: 1.1rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+    }
+
+    .title-group h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .title-group p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .nav-tabs {
+      display: flex;
+      background: #06090e;
+      padding: 0.25rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      gap: 0.25rem;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      background: var(--card-bg);
+      color: var(--primary);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .tab-btn span.badge {
+      font-size: 0.7rem;
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--primary);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.45rem 0.85rem;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: #1e293b;
+      border-color: var(--text-muted);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #000;
+      border-color: var(--primary-hover);
+      font-weight: 700;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      color: #000;
+    }
+
+    main {
+      flex: 1;
+      position: relative;
+      background: #06090e;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    footer {
+      background: var(--card-bg);
+      border-top: 1px solid var(--border);
+      padding: 0.4rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .shortcuts {
+      display: flex;
+      gap: 1rem;
+    }
+
+    kbd {
+      background: #1e293b;
+      border: 1px solid #334155;
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="logo-badge">🐝</div>
+      <div class="title-group">
+        <h1>BeeBuzz / EnergiAI <span style="font-size: 0.75rem; background: rgba(16, 185, 129, 0.15); color: var(--accent); padding: 0.15rem 0.5rem; border-radius: 99px; font-weight: 600;">Showcase</span></h1>
+        <p>Portal Oficial de Arquitetura & Fluxos HTTP/IA</p>
+      </div>
+    </div>
+
+    <nav class="nav-tabs">
+      <button class="tab-btn active" onclick="switchDiagram('architecture-overview', this)">
+        🏛️ Arquitetura Geral <span class="badge">1</span>
+      </button>
+      <button class="tab-btn" onclick="switchDiagram('analysis-flow', this)">
+        ⚡ Análise Energética <span class="badge">2</span>
+      </button>
+      <button class="tab-btn" onclick="switchDiagram('auth-flow', this)">
+        🔐 Autenticação & JWT <span class="badge">3</span>
+      </button>
+      <button class="tab-btn" onclick="switchDiagram('data-ai-pipeline', this)">
+        🤖 Pipeline Dados & IA <span class="badge">4</span>
+      </button>
+    </nav>
+
+    <div class="actions">
+      <a id="btn-standalone" href="architecture-overview.html" target="_blank" class="btn" title="Abrir HTML individual em nova aba">
+        ↗️ Abrir HTML
+      </a>
+      <a id="btn-svg" href="architecture-overview.svg" target="_blank" class="btn" title="Baixar Vetor SVG">
+        📐 SVG
+      </a>
+      <a id="btn-png" href="architecture-overview.png" target="_blank" class="btn btn-primary" title="Abrir/Baixar PNG 16:9">
+        🖼️ PNG
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <iframe id="diagram-frame" src="architecture-overview.html" title="Visualizador de Arquitetura"></iframe>
+  </main>
+
+  <footer>
+    <div>
+      Status: <strong style="color: var(--accent);">✓ Validação Showcase (0 erros / 0 avisos)</strong>
+    </div>
+    <div class="shortcuts">
+      <span>Atalhos: <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> para trocar de diagrama</span>
+    </div>
+  </footer>
+
+  <script>
+    function switchDiagram(name, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const iframe = document.getElementById('diagram-frame');
+      iframe.src = `${name}.html`;
+
+      document.getElementById('btn-standalone').href = `${name}.html`;
+      document.getElementById('btn-svg').href = `${name}.svg`;
+      document.getElementById('btn-png').href = `${name}.png`;
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (['1', '2', '3', '4'].includes(e.key)) {
+        const index = parseInt(e.key) - 1;
+        const buttons = document.querySelectorAll('.tab-btn');
+        if (buttons[index]) {
+          buttons[index].click();
+        }
+      }
+    });
+  </script>
+</body>
+</html>

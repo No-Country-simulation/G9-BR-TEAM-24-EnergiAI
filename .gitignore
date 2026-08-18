@@ -45,3 +45,8 @@ build/
 .DS_Store
 Thumbs.db
 *.log
+
+# Agent Skills Cache
+.agents/
+skills-lock.json
+

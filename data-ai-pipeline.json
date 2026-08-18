@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "BeeBuzz — Data & AI Pipeline",
+    "output": "data-ai-pipeline.html",
+    "viewBox": [1140, 740],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "training-and-export",
+        "label": "Data Preparation and Model Export",
+        "focus": ["dataset", "data_team", "onnx_file"],
+        "note": "Data Team processes PPH 2019 dataset in Jupyter, engineers proxies, and exports trained ONNX regression model."
+      },
+      {
+        "id": "storage-and-download",
+        "label": "OCI Cloud Storage and Boot Fetching",
+        "focus": ["onnx_file", "oci_bucket", "spring_boot"],
+        "note": "ONNX model artifact is stored in OCI Object Storage PAR bucket and downloaded by Spring Boot during startup."
+      },
+      {
+        "id": "inference-and-storage",
+        "label": "Native Java Inference and DB Persistence",
+        "focus": ["spring_boot", "onnx_runtime", "output_db"],
+        "note": "ONNX Runtime Java executes tensor prediction and AnaliseService persists results to Neon PostgreSQL."
+      }
+    ]
+  },
+  "stages": [
+    { "label": "Dataset & Origem" },
+    { "label": "Treinamento & Modelo" },
+    { "label": "Armazenamento Cloud" },
+    { "label": "Carregamento Spring" },
+    { "label": "Inferência & Persistência" }
+  ],
+  "nodes": [
+    { "id": "dataset", "type": "database", "label": "Dataset PPH 2019", "sublabel": "Base Analítica", "stage": 0, "row": 1, "tag": "Pesquisa Consumo" },
+    { "id": "data_team", "type": "external", "label": "Equipe de Dados", "sublabel": "Notebook Python", "stage": 1, "row": 0, "tag": "Scikit-Learn / ONNX" },
+    { "id": "onnx_file", "type": "messagebus", "label": "modelo_energia.onnx", "sublabel": "Modelo Binário", "stage": 1, "row": 4, "tag": "Artefato ONNX" },
+    { "id": "oci_bucket", "type": "cloud", "label": "OCI Object Storage", "sublabel": "beebuzz-data-lake", "stage": 2, "row": 2, "tag": "Link PAR HTTP" },
+    { "id": "spring_boot", "type": "backend", "label": "OciModelStorageSvc", "sublabel": "Spring Boot Startup", "stage": 3, "row": 2, "tag": "Java 21 Runtime" },
+    { "id": "onnx_runtime", "type": "backend", "label": "ONNX Runtime Java", "sublabel": "LocalOnnxInference", "stage": 4, "row": 0, "tag": "Native JNI Engine" },
+    { "id": "output_db", "type": "database", "label": "Neon PostgreSQL", "sublabel": "Tabela consumos", "stage": 4, "row": 4, "tag": "Persistência DTO" }
+  ],
+  "flows": [
+    { "from": "dataset", "to": "data_team", "label": "Ingestão PPH 2019", "classification": "Pandas DataFrames", "variant": "emphasis", "route": "vertical-channel" },
+    { "from": "data_team", "to": "onnx_file", "label": "Treinar & Exportar", "classification": "Serialização ONNX", "variant": "emphasis", "route": "straight", "labelDy": 30 },
+    { "from": "onnx_file", "to": "oci_bucket", "label": "Publicação PAR", "classification": "OCI Storage", "variant": "emphasis", "route": "vertical-channel" },
+    { "from": "oci_bucket", "to": "spring_boot", "label": "GET PAR Download", "classification": "Download Startup", "variant": "emphasis", "route": "straight" },
+    { "from": "spring_boot", "to": "onnx_runtime", "label": "Carregar Tensores", "classification": "Session JNI", "variant": "emphasis", "route": "vertical-channel" },
+    { "from": "onnx_runtime", "to": "output_db", "label": "Salvar Diagnóstico", "classification": "Persistência Consumo", "variant": "emphasis", "route": "straight", "labelDy": 30 }
+  ],
+  "cards": [
+    { "dot": "amber", "title": "Engenharia de Dados (Python)", "items": ["Notebook tratamento_dados_energia_regressao.ipynb limpa e transforma os dados", "Criação de proxies de consumo (iluminação, chuveiro, equipamentos de alto consumo)", "Treinamento do modelo preditivo e exportação para o formato padronizado ONNX"] },
+    { "dot": "emerald", "title": "Distribuição Nuvem (OCI Bucket)", "items": ["Modelo binário modelo_energia.onnx é publicado no OCI Object Storage", "Acesso liberado via Pre-Authenticated Request (PAR) para o backend Java", "OciModelStorageService do Spring Boot baixa o modelo binário no boot da aplicação"] },
+    { "dot": "rose", "title": "Inferência Nativa & Persistência", "items": ["ONNX Runtime Java (v1.18.0) executa a predição na JVM via bindings JNI", "Consumo em kWh predito é comparado com o consumo informado para definir perfil", "Resultado final e estimativa financeira são salvos no banco Neon PostgreSQL"] }
+  ]
+}
